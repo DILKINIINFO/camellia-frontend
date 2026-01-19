@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignIn: (user: { username: string; email: string }) => void;
 }
 
 export default function SignInModal({
   isOpen,
   onClose,
-  onSignIn,
 }: SignInModalProps) {
+  const { signIn } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,7 +46,7 @@ export default function SignInModal({
 
     // Simulate API call
     setTimeout(() => {
-      onSignIn({
+      signIn({
         username,
         email: `${username}@camellia.com`,
       });
@@ -63,7 +63,7 @@ export default function SignInModal({
 
     // Simulate Google Sign-In
     setTimeout(() => {
-      onSignIn({
+      signIn({
         username: 'Google User',
         email: 'user@google.com',
       });

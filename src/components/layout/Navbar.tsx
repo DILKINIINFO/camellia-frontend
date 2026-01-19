@@ -1,27 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import SignInModal from './SignInModal';
-
-interface User {
-  username: string;
-  email: string;
-}
+import { useAuth } from '../../context/AuthContext';
 
 export default function Navbar() {
   const location = useLocation();
+  const { user, logOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
 
   const isActive = (path: string) => {
     return location.pathname === path ? 'text-[#2D6A4F] font-bold' : 'text-gray-600 hover:text-[#52B788]';
   };
 
-  const handleSignIn = (userData: User) => {
-    setUser(userData);
-  };
-
   const handleLogOut = () => {
-    setUser(null);
+    logOut();
   };
 
   return (
@@ -43,9 +35,9 @@ export default function Navbar() {
         {user ? (
           <div className="flex items-center gap-4">
             <span className="text-gray-700 font-medium">Welcome, {user.username}!</span>
-            <button className="bg-[#2D6A4F] text-white px-10 py-3 rounded-md text-lg font-medium hover:bg-[#1B4332] transition">
+            <Link to="/dashboard" className="bg-[#2D6A4F] text-white px-10 py-3 rounded-md text-lg font-medium hover:bg-[#1B4332] transition">
               My Dashboard
-            </button>
+            </Link>
             <button
               onClick={handleLogOut}
               className="bg-gray-400 text-white px-6 py-3 rounded-md text-lg font-medium hover:bg-gray-500 transition"
@@ -66,7 +58,6 @@ export default function Navbar() {
       <SignInModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSignIn={handleSignIn}
       />
     </>
   );

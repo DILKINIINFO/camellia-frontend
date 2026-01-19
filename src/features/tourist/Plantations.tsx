@@ -1,4 +1,5 @@
 import { MapPin } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 
@@ -49,6 +50,8 @@ const ALL_PLANTATIONS = [
 ];
 
 export default function Plantations() {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-white font-sans text-[#1B4332]">
       {/* Header */}
@@ -82,6 +85,7 @@ export default function Plantations() {
             <div 
               key={plantation.id} 
               className="bg-white rounded-xl overflow-hidden shadow-md border border-gray-100 hover:shadow-lg transition-shadow cursor-pointer"
+              onClick={() => navigate(`/plantation/${plantation.id}`)}
             >
               <img 
                 src={plantation.image} 
@@ -95,7 +99,12 @@ export default function Plantations() {
                   <span className="text-sm">{plantation.address}</span>
                 </div>
                 <p className="text-gray-600 text-sm mb-4">{plantation.description}</p>
-                <button className="w-full bg-[#52B788] text-white py-2 rounded-md font-medium hover:bg-[#40916c] transition">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/plantation/${plantation.id}`);
+                  }}
+                  className="w-full bg-[#52B788] text-white py-2 rounded-md font-medium hover:bg-[#40916c] transition">
                   View Details
                 </button>
               </div>
