@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Star, Users, Clock, MapPinIcon, Phone, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { MapPin, Phone, Mail, X } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 
@@ -9,12 +10,12 @@ const PLANTATION_DATA: Record<string, any> = {
     id: '1',
     name: 'Pedro Tea Estate',
     address: 'Nuwara Eliya, Sri Lanka',
-    mainImage: '/images/about.png',
+    mainImage: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbbJISbGQn4noP42c9q4Sha96Z4OKv_kpKeg&s',
     galleryImages: [
-      '/images/about.png',
-      '/images/about.png',
-      '/images/about.png',
-      '/images/about.png'
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbbJISbGQn4noP42c9q4Sha96Z4OKv_kpKeg&s',
+      'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800',
+      'https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800'
     ],
     description: 'Experience the charm of Pedro Tea Estate with breathtaking views of tea plantations.',
     detailedDescription: 'Pedro Tea Estate is one of Sri Lanka\'s most prestigious tea plantations, nestled in the misty highlands of Nuwara Eliya. With over 150 years of tea-making excellence, this estate combines traditional methods with modern sustainability practices.',
@@ -54,14 +55,40 @@ const PLANTATION_DATA: Record<string, any> = {
       'Traditional Photography',
       'Picnic Lunch',
       'Hiking'
+    ],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'Sarah Johnson',
+        rating: 5,
+        date: 'January 15, 2025',
+        text: 'Absolutely fantastic experience! The staff was welcoming and knowledgeable. Our guide explained every detail of tea production beautifully. The views were breathtaking!',
+        verified: true
+      },
+      {
+        id: 2,
+        author: 'Michael Chen',
+        rating: 5,
+        date: 'January 10, 2025',
+        text: 'Best plantation tour I\'ve done in Sri Lanka. The tea tasting was excellent and authentic. The team made us feel very welcome throughout the visit.',
+        verified: true
+      },
+      {
+        id: 3,
+        author: 'Emma Williams',
+        rating: 4,
+        date: 'January 5, 2025',
+        text: 'Great experience overall. The factory tour was impressive. Only minor issue was the tour duration was shorter than expected, but still worth visiting!',
+        verified: true
+      }
     ]
   },
   '2': {
     id: '2',
     name: 'Bluefield Tea Garden',
     address: 'Ramboda, Sri Lanka',
-    mainImage: '/images/about.png',
-    galleryImages: ['/images/about.png', '/images/about.png', '/images/about.png', '/images/about.png'],
+    mainImage: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800',
+    galleryImages: ['https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800', 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5d1?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800'],
     description: 'Discover the tranquility and beauty of Bluefield Tea Garden.',
     detailedDescription: 'Bluefield Tea Garden offers a serene experience amidst lush green landscapes and cascading waterfalls. This family-owned estate is known for its exceptional quality teas and warm hospitality.',
     features: [
@@ -84,14 +111,32 @@ const PLANTATION_DATA: Record<string, any> = {
       phone: '+94 (0) 52 234 5678',
       email: 'info@bluefieldgarden.com'
     },
-    activities: ['Waterfall Trek', 'Tea Blending', 'Cooking Class', 'Photography', 'Nature Walk']
+    activities: ['Waterfall Trek', 'Tea Blending', 'Cooking Class', 'Photography', 'Nature Walk'],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'James Rodriguez',
+        rating: 5,
+        date: 'January 12, 2025',
+        text: 'The waterfall trek was spectacular! The tea blending workshop was the highlight. Highly recommended for nature lovers.',
+        verified: true
+      },
+      {
+        id: 2,
+        author: 'Lisa Anderson',
+        rating: 4,
+        date: 'January 8, 2025',
+        text: 'Beautiful location with wonderful hospitality. The farm-fresh meals were delicious and authentic.',
+        verified: true
+      }
+    ]
   },
   '3': {
     id: '3',
     name: 'Haputale Estate',
     address: 'Haputale, Sri Lanka',
-    mainImage: '/images/about.png',
-    galleryImages: ['/images/about.png', '/images/about.png', '/images/about.png', '/images/about.png'],
+    mainImage: 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5d1?w=800',
+    galleryImages: ['https://images.unsplash.com/photo-1511537190424-bbbab87ac5d1?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800', 'https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800'],
     description: 'Explore the historic Haputale Estate with stunning mountain views.',
     detailedDescription: 'Haputale Estate is renowned for its panoramic views and historic significance in Ceylon tea production. The estate offers authentic experiences and educational tours.',
     features: [
@@ -114,14 +159,24 @@ const PLANTATION_DATA: Record<string, any> = {
       phone: '+94 (0) 52 245 6789',
       email: 'info@haputale-estate.com'
     },
-    activities: ['Heritage Tour', 'Tea Processing', 'Bird Watching', 'Sunset Viewing', 'Cultural Show']
+    activities: ['Heritage Tour', 'Tea Processing', 'Bird Watching', 'Sunset Viewing', 'Cultural Show'],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'David Thompson',
+        rating: 5,
+        date: 'January 11, 2025',
+        text: 'Absolutely breathtaking views from the estate. The heritage tour was very informative. A must-visit!',
+        verified: true
+      }
+    ]
   },
   '4': {
     id: '4',
     name: 'Uda Pussellawa',
     address: 'Kandy, Sri Lanka',
-    mainImage: '/images/about.png',
-    galleryImages: ['/images/about.png', '/images/about.png', '/images/about.png', '/images/about.png'],
+    mainImage: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
+    galleryImages: ['https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800', 'https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800', 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800'],
     description: 'Visit the lush green plantations of Uda Pussellawa.',
     detailedDescription: 'Uda Pussellawa is a premier tea estate offering immersive tea tourism experiences in the heart of Kandy\'s tea country.',
     features: [
@@ -144,14 +199,24 @@ const PLANTATION_DATA: Record<string, any> = {
       phone: '+94 (0) 81 234 5678',
       email: 'info@udapussellawa.com'
     },
-    activities: ['Tea Picking', 'Factory Tour', 'Overnight Stay', 'Traditional Cooking', 'Meditation']
+    activities: ['Tea Picking', 'Factory Tour', 'Overnight Stay', 'Traditional Cooking', 'Meditation'],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'Robert Davis',
+        rating: 4,
+        date: 'January 9, 2025',
+        text: 'Great tea picking experience! The guides were very knowledgeable. Would recommend for anyone interested in authentic tea farming.',
+        verified: true
+      }
+    ]
   },
   '5': {
     id: '5',
     name: 'Dambulla Tea Valley',
     address: 'Dambulla, Sri Lanka',
-    mainImage: '/images/about.png',
-    galleryImages: ['/images/about.png', '/images/about.png', '/images/about.png', '/images/about.png'],
+    mainImage: 'https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800',
+    galleryImages: ['https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800', 'https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800', 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800', 'https://images.unsplash.com/photo-1511537190424-bbbab87ac5d1?w=800'],
     description: 'Immerse yourself in the scenic Dambulla Tea Valley with traditional tea-making experiences.',
     detailedDescription: 'Dambulla Tea Valley offers unique cultural experiences combined with traditional tea-making practices.',
     features: [
@@ -174,14 +239,24 @@ const PLANTATION_DATA: Record<string, any> = {
       phone: '+94 (0) 66 234 5678',
       email: 'info@dambullateavalley.com'
     },
-    activities: ['Traditional Tea Making', 'Cultural Show', 'Market Tour', 'Meditation', 'Photography']
+    activities: ['Traditional Tea Making', 'Cultural Show', 'Market Tour', 'Meditation', 'Photography'],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'Patricia Miller',
+        rating: 5,
+        date: 'January 7, 2025',
+        text: 'Cultural experience was amazing! The traditional tea-making demonstration was enlightening. Very authentic!',
+        verified: true
+      }
+    ]
   },
   '6': {
     id: '6',
     name: 'Ella Ridge Plantation',
     address: 'Ella, Sri Lanka',
-    mainImage: '/images/about.png',
-    galleryImages: ['/images/about.png', '/images/about.png', '/images/about.png', '/images/about.png'],
+    mainImage: 'https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800',
+    galleryImages: ['https://images.unsplash.com/photo-1599599810694-b5ac4dd1151c?w=800', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', 'https://images.unsplash.com/photo-1495195134817-aeb325ef3c61?w=800', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbbJISbGQn4noP42c9q4Sha96Z4OKv_kpKeg&s'],
     description: 'Enjoy panoramic views and authentic Ceylon tea at Ella Ridge Plantation.',
     detailedDescription: 'Ella Ridge Plantation combines adventure and relaxation with breathtaking vistas and premium tea experiences.',
     features: [
@@ -204,13 +279,32 @@ const PLANTATION_DATA: Record<string, any> = {
       phone: '+94 (0) 57 234 5678',
       email: 'info@ellaridge.com'
     },
-    activities: ['Hiking', 'Tea Spa', 'Gourmet Dining', 'Tea Tasting', 'Photography Tours']
+    activities: ['Hiking', 'Tea Spa', 'Gourmet Dining', 'Tea Tasting', 'Photography Tours'],
+    reviewsList: [
+      {
+        id: 1,
+        author: 'Jennifer White',
+        rating: 5,
+        date: 'January 14, 2025',
+        text: 'Outstanding views and exceptional service! The gourmet tea-paired meals were exquisite. Highly recommended!',
+        verified: true
+      },
+      {
+        id: 2,
+        author: 'Christopher Brown',
+        rating: 5,
+        date: 'January 6, 2025',
+        text: 'The tea spa was incredibly relaxing. The hikes offer some of the best views in Sri Lanka. Worth every penny!',
+        verified: true
+      }
+    ]
   }
 };
 
 export default function PlantationDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const plantation = id ? PLANTATION_DATA[id] : null;
 
   if (!plantation) {
@@ -233,6 +327,31 @@ export default function PlantationDetail() {
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#1B4332]">
+      {/* Image Lightbox Modal */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            className="relative max-w-4xl w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-white text-black p-2 rounded-full hover:bg-gray-200 transition z-10"
+            >
+              <X size={24} />
+            </button>
+            <img
+              src={selectedImage}
+              alt="Full view"
+              className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <Navbar />
 
@@ -241,7 +360,7 @@ export default function PlantationDetail() {
         <img
           src={plantation.mainImage}
           alt={plantation.name}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover brightness-75"
         />
         <div className="absolute top-0 left-0 right-0 bottom-0 bg-black/20"></div>
       </div>
@@ -250,24 +369,11 @@ export default function PlantationDetail() {
       <main className="py-16 px-12">
         <div className="max-w-5xl mx-auto">
           {/* Title and Location */}
-          <div className="mb-12">
-            <h1 className="text-5xl font-bold font-serif mb-4">{plantation.name}</h1>
-            <div className="flex items-center gap-2 text-lg text-gray-600 mb-4">
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold font-serif mb-4">{plantation.name}</h1>
+            <div className="flex items-center gap-2 text-lg text-gray-600 mb-6">
               <MapPin size={24} />
               <span>{plantation.address}</span>
-            </div>
-
-            {/* Rating */}
-            <div className="flex items-center gap-2 mb-6">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className={i < Math.floor(plantation.rating) ? 'text-yellow-400 text-xl' : 'text-gray-300 text-xl'}>
-                    ★
-                  </span>
-                ))}
-              </div>
-              <span className="text-lg font-semibold">{plantation.rating}</span>
-              <span className="text-gray-600">({plantation.reviews} reviews)</span>
             </div>
           </div>
 
@@ -276,26 +382,40 @@ export default function PlantationDetail() {
             <p className="text-lg text-gray-700 leading-relaxed">{plantation.detailedDescription}</p>
           </div>
 
-          {/* Gallery */}
+          {/* Gallery - 3 Images in a Row */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-8">Photo Gallery</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {plantation.galleryImages.map((image, idx) => (
+            <div className="grid grid-cols-3 gap-6">
+              {plantation.galleryImages.slice(0, 3).map((image: string, idx: number) => (
                 <img
                   key={idx}
                   src={image}
                   alt={`Gallery ${idx + 1}`}
-                  className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition"
+                  onClick={() => setSelectedImage(image)}
+                  className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition cursor-pointer hover:opacity-80"
                 />
               ))}
             </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex gap-6 justify-center mb-16">
+            <button className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg">
+              Book Experience
+            </button>
+            <button
+              onClick={() => navigate('/contact')}
+              className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg"
+            >
+              Contact Us
+            </button>
           </div>
 
           {/* Features */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-8">Experience Highlights</h2>
             <div className="grid md:grid-cols-3 gap-6">
-              {plantation.features.map((feature, idx) => (
+              {plantation.features.map((feature: any, idx: number) => (
                 <div key={idx} className="bg-gray-50 p-6 rounded-lg shadow-sm hover:shadow-md transition border-l-4 border-[#2D6A4F]">
                   <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                   <p className="text-gray-600">{feature.description}</p>
@@ -331,7 +451,7 @@ export default function PlantationDetail() {
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-8">Available Activities</h2>
             <div className="grid md:grid-cols-3 gap-4">
-              {plantation.activities.map((activity, idx) => (
+              {plantation.activities.map((activity: string, idx: number) => (
                 <div key={idx} className="bg-[#B7E4C7] text-[#1B4332] px-6 py-3 rounded-full text-center font-semibold">
                   {activity}
                 </div>
@@ -340,22 +460,58 @@ export default function PlantationDetail() {
           </div>
 
           {/* Details Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
-              <Clock className="w-12 h-12 mx-auto mb-4 text-[#2D6A4F]" />
-              <p className="text-sm text-gray-600 mb-2">Duration</p>
-              <p className="text-2xl font-bold">{plantation.duration}</p>
+          <div className="mb-16 bg-gray-50 p-8 rounded-lg text-center">
+            <h2 className="text-2xl font-bold mb-4">Best Time to Visit</h2>
+            <p className="text-2xl font-semibold text-[#2D6A4F]">{plantation.bestTime}</p>
+          </div>
+
+          {/* Rating and Reviews */}
+          <div className="mb-16 text-center">
+            <h2 className="text-3xl font-bold mb-4">Visitor Reviews</h2>
+            <div className="flex items-center justify-center gap-2 mb-8">
+              <div className="flex gap-1">
+                {[...Array(5)].map((_, i) => (
+                  <span key={i} className={i < Math.floor(plantation.rating) ? 'text-yellow-400 text-3xl' : 'text-gray-300 text-3xl'}>
+                    ★
+                  </span>
+                ))}
+              </div>
+              <span className="text-3xl font-bold">{plantation.rating}</span>
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
-              <Users className="w-12 h-12 mx-auto mb-4 text-[#2D6A4F]" />
-              <p className="text-sm text-gray-600 mb-2">Best Time to Visit</p>
-              <p className="text-2xl font-bold">{plantation.bestTime}</p>
+            <p className="text-lg text-gray-600 mb-8">Based on {plantation.reviews} visitor reviews</p>
+
+            {/* Individual Reviews */}
+            <div className="space-y-6 max-w-3xl mx-auto mb-8">
+              {plantation.reviewsList.slice(0, 2).map((review: any) => (
+                <div key={review.id} className="bg-gray-50 p-6 rounded-lg text-left border border-gray-200">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="font-bold text-lg">{review.author}</h3>
+                      <p className="text-sm text-gray-500">{review.date}</p>
+                    </div>
+                    <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <span key={i} className={i < review.rating ? 'text-yellow-400' : 'text-gray-300'}>
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-gray-700">{review.text}</p>
+                  {review.verified && (
+                    <p className="text-xs text-green-600 mt-3">✓ Verified Guest</p>
+                  )}
+                </div>
+              ))}
             </div>
-            <div className="bg-gray-50 p-6 rounded-lg text-center">
-              <Star className="w-12 h-12 mx-auto mb-4 text-[#2D6A4F]" />
-              <p className="text-sm text-gray-600 mb-2">Price</p>
-              <p className="text-2xl font-bold">{plantation.price}</p>
-            </div>
+
+            {/* More Reviews Button */}
+            <button
+              onClick={() => navigate(`/plantation/${id}/reviews`)}
+              className="text-[#2D6A4F] hover:text-[#1B4332] font-semibold text-lg underline"
+            >
+              View All {plantation.reviews} Reviews →
+            </button>
           </div>
 
           {/* Contact Information */}
