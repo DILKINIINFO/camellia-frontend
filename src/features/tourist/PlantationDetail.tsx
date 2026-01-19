@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { MapPin, Phone, Mail, X } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
+import BookExperienceModal from './BookExperienceModal';
 
 // Mock plantation data with full details
 const PLANTATION_DATA: Record<string, any> = {
@@ -55,6 +56,14 @@ const PLANTATION_DATA: Record<string, any> = {
       'Traditional Photography',
       'Picnic Lunch',
       'Hiking'
+    ],
+    experiences: [
+      { name: 'Tea Leaf Picking', priceUSD: 45, priceLKR: 14850 },
+      { name: 'Factory Tour', priceUSD: 35, priceLKR: 11550 },
+      { name: 'Tea Tasting', priceUSD: 25, priceLKR: 8250 },
+      { name: 'Traditional Photography', priceUSD: 40, priceLKR: 13200 },
+      { name: 'Picnic Lunch', priceUSD: 30, priceLKR: 9900 },
+      { name: 'Hiking', priceUSD: 50, priceLKR: 16500 }
     ],
     reviewsList: [
       {
@@ -112,6 +121,13 @@ const PLANTATION_DATA: Record<string, any> = {
       email: 'info@bluefieldgarden.com'
     },
     activities: ['Waterfall Trek', 'Tea Blending', 'Cooking Class', 'Photography', 'Nature Walk'],
+    experiences: [
+      { name: 'Waterfall Trek', priceUSD: 40, priceLKR: 13200 },
+      { name: 'Tea Blending', priceUSD: 35, priceLKR: 11550 },
+      { name: 'Cooking Class', priceUSD: 50, priceLKR: 16500 },
+      { name: 'Photography', priceUSD: 30, priceLKR: 9900 },
+      { name: 'Nature Walk', priceUSD: 25, priceLKR: 8250 }
+    ],
     reviewsList: [
       {
         id: 1,
@@ -160,6 +176,13 @@ const PLANTATION_DATA: Record<string, any> = {
       email: 'info@haputale-estate.com'
     },
     activities: ['Heritage Tour', 'Tea Processing', 'Bird Watching', 'Sunset Viewing', 'Cultural Show'],
+    experiences: [
+      { name: 'Heritage Tour', priceUSD: 38, priceLKR: 12540 },
+      { name: 'Tea Processing', priceUSD: 35, priceLKR: 11550 },
+      { name: 'Bird Watching', priceUSD: 30, priceLKR: 9900 },
+      { name: 'Sunset Viewing', priceUSD: 25, priceLKR: 8250 },
+      { name: 'Cultural Show', priceUSD: 40, priceLKR: 13200 }
+    ],
     reviewsList: [
       {
         id: 1,
@@ -398,19 +421,6 @@ export default function PlantationDetail() {
             </div>
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex gap-6 justify-center mb-16">
-            <button className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg">
-              Book Experience
-            </button>
-            <button
-              onClick={() => navigate('/contact')}
-              className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg"
-            >
-              Contact Us
-            </button>
-          </div>
-
           {/* Features */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold mb-8">Experience Highlights</h2>
@@ -456,6 +466,11 @@ export default function PlantationDetail() {
                   {activity}
                 </div>
               ))}
+            </div>
+            <div className="flex justify-center mt-8">
+              <button className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg">
+                Book Experience
+              </button>
             </div>
           </div>
 
@@ -533,19 +548,6 @@ export default function PlantationDetail() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-6 justify-center">
-            <button className="bg-[#2D6A4F] hover:bg-[#1B4332] text-white font-semibold py-3 px-10 rounded-lg transition text-lg">
-              Book Now
-            </button>
-            <button
-              onClick={() => navigate('/contact')}
-              className="border-2 border-[#2D6A4F] text-[#2D6A4F] hover:bg-[#2D6A4F] hover:text-white font-semibold py-3 px-10 rounded-lg transition text-lg"
-            >
-              Contact Us
-            </button>
           </div>
 
           {/* Back Button */}
