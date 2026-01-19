@@ -3,10 +3,9 @@ import { useState } from 'react';
 import { MapPin, Phone, Mail, X } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
-import BookExperienceModal from './BookExperienceModal';
 
 // Mock plantation data with full details
-const PLANTATION_DATA: Record<string, any> = {
+export const PLANTATION_DATA: Record<string, any> = {
   '1': {
     id: '1',
     name: 'Pedro Tea Estate',
@@ -58,12 +57,66 @@ const PLANTATION_DATA: Record<string, any> = {
       'Hiking'
     ],
     experiences: [
-      { name: 'Tea Leaf Picking', priceUSD: 45, priceLKR: 14850 },
-      { name: 'Factory Tour', priceUSD: 35, priceLKR: 11550 },
-      { name: 'Tea Tasting', priceUSD: 25, priceLKR: 8250 },
-      { name: 'Traditional Photography', priceUSD: 40, priceLKR: 13200 },
-      { name: 'Picnic Lunch', priceUSD: 30, priceLKR: 9900 },
-      { name: 'Hiking', priceUSD: 50, priceLKR: 16500 }
+      {
+        name: 'Tea Leaf Picking',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 45, child: 25 },
+        timeSlots: [
+          { date: '2025-02-10', time: '08:00 AM', capacity: 10, booked: 7 },
+          { date: '2025-02-10', time: '02:00 PM', capacity: 10, booked: 3 },
+          { date: '2025-02-11', time: '08:00 AM', capacity: 10, booked: 2 },
+          { date: '2025-02-11', time: '02:00 PM', capacity: 10, booked: 10 },
+        ],
+      },
+      {
+        name: 'Factory Tour',
+        priceUSD: { adult: 35, child: 18 },
+        timeSlots: [
+          { date: '2025-02-10', time: '09:00 AM', capacity: 15, booked: 9 },
+          { date: '2025-02-10', time: '03:00 PM', capacity: 15, booked: 5 },
+          { date: '2025-02-11', time: '09:00 AM', capacity: 15, booked: 15 },
+          { date: '2025-02-12', time: '09:00 AM', capacity: 15, booked: 4 },
+        ],
+      },
+      {
+        name: 'Tea Tasting',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 25, child: 12 },
+        timeSlots: [
+          { date: '2025-02-10', time: '11:00 AM', capacity: 20, booked: 12 },
+          { date: '2025-02-10', time: '04:00 PM', capacity: 20, booked: 20 },
+          { date: '2025-02-11', time: '11:00 AM', capacity: 20, booked: 8 },
+        ],
+      },
+      {
+        name: 'Traditional Photography',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 40, child: 22 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:30 AM', capacity: 8, booked: 5 },
+          { date: '2025-02-11', time: '06:30 AM', capacity: 8, booked: 2 },
+          { date: '2025-02-12', time: '06:30 AM', capacity: 8, booked: 1 },
+        ],
+      },
+      {
+        name: 'Picnic Lunch',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '12:30 PM', capacity: 12, booked: 10 },
+          { date: '2025-02-11', time: '12:30 PM', capacity: 12, booked: 4 },
+          { date: '2025-02-12', time: '12:30 PM', capacity: 12, booked: 6 },
+        ],
+      },
+      {
+        name: 'Hiking',
+        priceUSD: { adult: 50, child: 28 },
+        timeSlots: [
+          { date: '2025-02-10', time: '07:00 AM', capacity: 12, booked: 11 },
+          { date: '2025-02-11', time: '07:00 AM', capacity: 12, booked: 3 },
+          { date: '2025-02-12', time: '07:00 AM', capacity: 12, booked: 9 },
+        ],
+      },
     ],
     reviewsList: [
       {
@@ -122,11 +175,56 @@ const PLANTATION_DATA: Record<string, any> = {
     },
     activities: ['Waterfall Trek', 'Tea Blending', 'Cooking Class', 'Photography', 'Nature Walk'],
     experiences: [
-      { name: 'Waterfall Trek', priceUSD: 40, priceLKR: 13200 },
-      { name: 'Tea Blending', priceUSD: 35, priceLKR: 11550 },
-      { name: 'Cooking Class', priceUSD: 50, priceLKR: 16500 },
-      { name: 'Photography', priceUSD: 30, priceLKR: 9900 },
-      { name: 'Nature Walk', priceUSD: 25, priceLKR: 8250 }
+      {
+        name: 'Waterfall Trek',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 40, child: 22 },
+        timeSlots: [
+          { date: '2025-02-10', time: '07:00 AM', capacity: 12, booked: 8 },
+          { date: '2025-02-10', time: '02:00 PM', capacity: 12, booked: 10 },
+          { date: '2025-02-11', time: '07:00 AM', capacity: 12, booked: 5 },
+        ],
+      },
+      {
+        name: 'Tea Blending',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 35, child: 18 },
+        timeSlots: [
+          { date: '2025-02-10', time: '10:00 AM', capacity: 10, booked: 10 },
+          { date: '2025-02-10', time: '03:00 PM', capacity: 10, booked: 2 },
+          { date: '2025-02-11', time: '10:00 AM', capacity: 10, booked: 6 },
+        ],
+      },
+      {
+        name: 'Cooking Class',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 50, child: 28 },
+        timeSlots: [
+          { date: '2025-02-10', time: '11:00 AM', capacity: 8, booked: 7 },
+          { date: '2025-02-11', time: '11:00 AM', capacity: 8, booked: 3 },
+          { date: '2025-02-12', time: '11:00 AM', capacity: 8, booked: 1 },
+        ],
+      },
+      {
+        name: 'Photography',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:00 AM', capacity: 10, booked: 9 },
+          { date: '2025-02-11', time: '06:00 AM', capacity: 10, booked: 2 },
+          { date: '2025-02-12', time: '06:00 AM', capacity: 10, booked: 5 },
+        ],
+      },
+      {
+        name: 'Nature Walk',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 25, child: 12 },
+        timeSlots: [
+          { date: '2025-02-10', time: '04:00 PM', capacity: 15, booked: 14 },
+          { date: '2025-02-11', time: '04:00 PM', capacity: 15, booked: 6 },
+          { date: '2025-02-12', time: '04:00 PM', capacity: 15, booked: 8 },
+        ],
+      },
     ],
     reviewsList: [
       {
@@ -177,11 +275,56 @@ const PLANTATION_DATA: Record<string, any> = {
     },
     activities: ['Heritage Tour', 'Tea Processing', 'Bird Watching', 'Sunset Viewing', 'Cultural Show'],
     experiences: [
-      { name: 'Heritage Tour', priceUSD: 38, priceLKR: 12540 },
-      { name: 'Tea Processing', priceUSD: 35, priceLKR: 11550 },
-      { name: 'Bird Watching', priceUSD: 30, priceLKR: 9900 },
-      { name: 'Sunset Viewing', priceUSD: 25, priceLKR: 8250 },
-      { name: 'Cultural Show', priceUSD: 40, priceLKR: 13200 }
+      {
+        name: 'Heritage Tour',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 38, child: 20 },
+        timeSlots: [
+          { date: '2025-02-10', time: '09:00 AM', capacity: 15, booked: 9 },
+          { date: '2025-02-10', time: '02:00 PM', capacity: 15, booked: 12 },
+          { date: '2025-02-11', time: '09:00 AM', capacity: 15, booked: 4 },
+        ],
+      },
+      {
+        name: 'Tea Processing',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 35, child: 18 },
+        timeSlots: [
+          { date: '2025-02-10', time: '08:30 AM', capacity: 12, booked: 10 },
+          { date: '2025-02-11', time: '08:30 AM', capacity: 12, booked: 5 },
+          { date: '2025-02-12', time: '08:30 AM', capacity: 12, booked: 2 },
+        ],
+      },
+      {
+        name: 'Bird Watching',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:00 AM', capacity: 10, booked: 10 },
+          { date: '2025-02-11', time: '06:00 AM', capacity: 10, booked: 3 },
+          { date: '2025-02-12', time: '06:00 AM', capacity: 10, booked: 7 },
+        ],
+      },
+      {
+        name: 'Sunset Viewing',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 25, child: 12 },
+        timeSlots: [
+          { date: '2025-02-10', time: '05:00 PM', capacity: 20, booked: 15 },
+          { date: '2025-02-11', time: '05:00 PM', capacity: 20, booked: 8 },
+          { date: '2025-02-12', time: '05:00 PM', capacity: 20, booked: 11 },
+        ],
+      },
+      {
+        name: 'Cultural Show',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 40, child: 22 },
+        timeSlots: [
+          { date: '2025-02-10', time: '07:00 PM', capacity: 25, booked: 18 },
+          { date: '2025-02-11', time: '07:00 PM', capacity: 25, booked: 9 },
+          { date: '2025-02-12', time: '07:00 PM', capacity: 25, booked: 3 },
+        ],
+      },
     ],
     reviewsList: [
       {
@@ -223,6 +366,58 @@ const PLANTATION_DATA: Record<string, any> = {
       email: 'info@udapussellawa.com'
     },
     activities: ['Tea Picking', 'Factory Tour', 'Overnight Stay', 'Traditional Cooking', 'Meditation'],
+    experiences: [
+      {
+        name: 'Tea Picking',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 42, child: 23 },
+        timeSlots: [
+          { date: '2025-02-10', time: '08:00 AM', capacity: 12, booked: 8 },
+          { date: '2025-02-10', time: '02:00 PM', capacity: 12, booked: 11 },
+          { date: '2025-02-11', time: '08:00 AM', capacity: 12, booked: 4 },
+        ],
+      },
+      {
+        name: 'Factory Tour',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 35, child: 18 },
+        timeSlots: [
+          { date: '2025-02-10', time: '10:00 AM', capacity: 15, booked: 12 },
+          { date: '2025-02-11', time: '10:00 AM', capacity: 15, booked: 6 },
+          { date: '2025-02-12', time: '10:00 AM', capacity: 15, booked: 2 },
+        ],
+      },
+      {
+        name: 'Overnight Stay',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 80, child: 45 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:00 PM', capacity: 6, booked: 6 },
+          { date: '2025-02-11', time: '06:00 PM', capacity: 6, booked: 2 },
+          { date: '2025-02-12', time: '06:00 PM', capacity: 6, booked: 4 },
+        ],
+      },
+      {
+        name: 'Traditional Cooking',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 45, child: 25 },
+        timeSlots: [
+          { date: '2025-02-10', time: '11:00 AM', capacity: 10, booked: 9 },
+          { date: '2025-02-11', time: '11:00 AM', capacity: 10, booked: 5 },
+          { date: '2025-02-12', time: '11:00 AM', capacity: 10, booked: 1 },
+        ],
+      },
+      {
+        name: 'Meditation',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 20, child: 10 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:00 AM', capacity: 20, booked: 15 },
+          { date: '2025-02-11', time: '06:00 AM', capacity: 20, booked: 8 },
+          { date: '2025-02-12', time: '06:00 AM', capacity: 20, booked: 12 },
+        ],
+      },
+    ],
     reviewsList: [
       {
         id: 1,
@@ -263,6 +458,58 @@ const PLANTATION_DATA: Record<string, any> = {
       email: 'info@dambullateavalley.com'
     },
     activities: ['Traditional Tea Making', 'Cultural Show', 'Market Tour', 'Meditation', 'Photography'],
+    experiences: [
+      {
+        name: 'Traditional Tea Making',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 35, child: 18 },
+        timeSlots: [
+          { date: '2025-02-10', time: '08:00 AM', capacity: 10, booked: 7 },
+          { date: '2025-02-10', time: '03:00 PM', capacity: 10, booked: 9 },
+          { date: '2025-02-11', time: '08:00 AM', capacity: 10, booked: 2 },
+        ],
+      },
+      {
+        name: 'Cultural Show',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '07:00 PM', capacity: 20, booked: 16 },
+          { date: '2025-02-11', time: '07:00 PM', capacity: 20, booked: 5 },
+          { date: '2025-02-12', time: '07:00 PM', capacity: 20, booked: 11 },
+        ],
+      },
+      {
+        name: 'Market Tour',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 25, child: 12 },
+        timeSlots: [
+          { date: '2025-02-10', time: '09:00 AM', capacity: 15, booked: 12 },
+          { date: '2025-02-11', time: '09:00 AM', capacity: 15, booked: 4 },
+          { date: '2025-02-12', time: '09:00 AM', capacity: 15, booked: 8 },
+        ],
+      },
+      {
+        name: 'Meditation',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 20, child: 10 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:00 AM', capacity: 15, booked: 14 },
+          { date: '2025-02-11', time: '06:00 AM', capacity: 15, booked: 3 },
+          { date: '2025-02-12', time: '06:00 AM', capacity: 15, booked: 9 },
+        ],
+      },
+      {
+        name: 'Photography',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '05:30 AM', capacity: 10, booked: 8 },
+          { date: '2025-02-11', time: '05:30 AM', capacity: 10, booked: 2 },
+          { date: '2025-02-12', time: '05:30 AM', capacity: 10, booked: 6 },
+        ],
+      },
+    ],
     reviewsList: [
       {
         id: 1,
@@ -303,6 +550,58 @@ const PLANTATION_DATA: Record<string, any> = {
       email: 'info@ellaridge.com'
     },
     activities: ['Hiking', 'Tea Spa', 'Gourmet Dining', 'Tea Tasting', 'Photography Tours'],
+    experiences: [
+      {
+        name: 'Hiking',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 50, child: 28 },
+        timeSlots: [
+          { date: '2025-02-10', time: '07:00 AM', capacity: 12, booked: 10 },
+          { date: '2025-02-10', time: '02:00 PM', capacity: 12, booked: 8 },
+          { date: '2025-02-11', time: '07:00 AM', capacity: 12, booked: 3 },
+        ],
+      },
+      {
+        name: 'Tea Spa',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 60, child: 33 },
+        timeSlots: [
+          { date: '2025-02-10', time: '10:00 AM', capacity: 8, booked: 8 },
+          { date: '2025-02-11', time: '10:00 AM', capacity: 8, booked: 4 },
+          { date: '2025-02-12', time: '10:00 AM', capacity: 8, booked: 1 },
+        ],
+      },
+      {
+        name: 'Gourmet Dining',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 55, child: 30 },
+        timeSlots: [
+          { date: '2025-02-10', time: '12:00 PM', capacity: 10, booked: 9 },
+          { date: '2025-02-11', time: '12:00 PM', capacity: 10, booked: 5 },
+          { date: '2025-02-12', time: '12:00 PM', capacity: 10, booked: 2 },
+        ],
+      },
+      {
+        name: 'Tea Tasting',
+        category: 'Tea Factory Tour & Tasting',
+        priceUSD: { adult: 30, child: 15 },
+        timeSlots: [
+          { date: '2025-02-10', time: '03:00 PM', capacity: 15, booked: 12 },
+          { date: '2025-02-11', time: '03:00 PM', capacity: 15, booked: 6 },
+          { date: '2025-02-12', time: '03:00 PM', capacity: 15, booked: 9 },
+        ],
+      },
+      {
+        name: 'Photography Tours',
+        category: 'Hiking & Tea Plucking',
+        priceUSD: { adult: 45, child: 25 },
+        timeSlots: [
+          { date: '2025-02-10', time: '06:30 AM', capacity: 10, booked: 9 },
+          { date: '2025-02-11', time: '06:30 AM', capacity: 10, booked: 3 },
+          { date: '2025-02-12', time: '06:30 AM', capacity: 10, booked: 7 },
+        ],
+      },
+    ],
     reviewsList: [
       {
         id: 1,
@@ -468,7 +767,10 @@ export default function PlantationDetail() {
               ))}
             </div>
             <div className="flex justify-center mt-8">
-              <button className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg">
+              <button
+                onClick={() => navigate(`/plantation/${id}/booking`)}
+                className="bg-[#52B788] hover:bg-[#40916c] text-white font-bold py-3 px-12 rounded-lg transition text-lg"
+              >
                 Book Experience
               </button>
             </div>
