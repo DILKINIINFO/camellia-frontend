@@ -7,16 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        theme: {
-  extend: {
-    colors: {
-      'camellia-dark': '#1B4332',
-      'camellia-green': '#2D6A4F',
-      'camellia-medium': '#52B788',
-      'camellia-light': '#B7E4C7',
-    }
-  }
-}
+        'camellia-dark': '#1B4332',
+        'camellia-green': '#2D6A4F',
+        'camellia-medium': '#52B788',
+        'camellia-light': '#B7E4C7',
+      },
+      backdropBlur: {
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '20px',
       }
     },
   },
