@@ -67,22 +67,7 @@ export default function BookingsPage() {
     );
   };
 
-  // customer details collected after guests step
-  const [customer, setCustomer] = useState<{
-    fullName: string;
-    countryOfResidence: string;
-    idType: string;
-    idNumber: string;
-    email: string;
-    address: string;
-  }>({ fullName: '', countryOfResidence: '', idType: '', idNumber: '', email: '', address: '' });
-
   // experience selection removed — categories drive which experiences are included
-
-  const hasTimeSlots = (experienceName: string): boolean => {
-    const exp = plantation.experiences.find((e: any) => e.name === experienceName);
-    return exp && exp.timeSlots && exp.timeSlots.length > 0;
-  };
 
   const getCommonTimeSlots = () => {
     if (!selectedCategories || selectedCategories.length === 0) return [];
@@ -134,26 +119,7 @@ export default function BookingsPage() {
   };
 
   const handleConfirmBooking = () => {
-    let totalPrice = 0;
-    let experienceDetails = '';
-
-    booking.experiences.forEach((expName) => {
-      const experience = plantation.experiences.find((e: any) => e.name === expName);
-      if (experience) {
-        const adultPrice = experience.priceUSD.adult;
-        const childPrice = experience.priceUSD.child;
-        const displayAdultPrice = isLocalSriLankan ? adultPrice * USD_TO_LKR : adultPrice;
-        const displayChildPrice = isLocalSriLankan ? childPrice * USD_TO_LKR : childPrice;
-        const expTotal = displayAdultPrice * booking.adults + displayChildPrice * booking.children;
-        totalPrice += expTotal;
-        experienceDetails += `\n  • ${expName}: ${currency === 'LKR' ? 'Rs' : '$'} ${expTotal.toLocaleString()}`;
-      }
-    });
-
-    alert(
-      `✓ Booking Confirmed!\n\nPlantation: ${plantation.name}\nExperiences: ${booking.experiences.join(', ')}\nDate: ${booking.date}\nTime: ${booking.time}\nGuests: ${booking.adults} Adult${booking.adults !== 1 ? 's' : ''}, ${booking.children} Child${booking.children !== 1 ? 'ren' : ''}\n\nPrice Breakdown:${experienceDetails}\n\nTotal: ${currency === 'LKR' ? 'Rs' : '$'} ${totalPrice.toLocaleString()} ${currency}`
-    );
-    navigate(`/plantation/${id}`);
+    setStep('details');
   };
 
   // Step 1: Country Selection
@@ -208,7 +174,7 @@ export default function BookingsPage() {
     );
   }
 
-  // Step 1.5: Category Selection
+  // Step 2: Category Selection
   if (step === 'category') {
     const categories = ['Tea Factory Tour & Tasting', 'Hiking & Tea Plucking'];
 
@@ -228,7 +194,7 @@ export default function BookingsPage() {
                 ← Back
               </button>
               <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 1.5 of 4: Select Categories</p>
+              <p className="text-lg text-gray-600">Step 2 of 4: Select Categories</p>
               <div className="mt-4 p-4 bg-[#E8F5E9] rounded-lg">
                 <p className="text-sm text-gray-600">Country: <span className="font-bold text-[#2D6A4F]">{country}</span></p>
                 <p className="text-sm text-gray-600">Currency: <span className="font-bold text-[#2D6A4F]">{currency}</span></p>
@@ -298,124 +264,6 @@ export default function BookingsPage() {
               <div className="text-center py-8 bg-gray-50 rounded-lg">
                 <p className="text-gray-500 text-lg">
                   Select at least one category to proceed
-                </p>
-              </div>
-            )}
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // Step 2: Experience Selection
-  if (step === 'experience') {
-    const filteredExperiences = plantation.experiences.filter((exp: any) =>
-      selectedCategories.includes(exp.category)
-    );
-
-    return (
-      <div className="min-h-screen bg-white font-sans text-[#1B4332]">
-        <Navbar />
-        <main className="py-16 px-12">
-          <div className="max-w-2xl mx-auto">
-            <div className="mb-8">
-              <button
-                onClick={() => setStep('category')}
-                className="text-[#2D6A4F] hover:text-[#1B4332] font-semibold text-lg underline mb-4"
-              >
-                ← Back
-              </button>
-              <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 2 of 4: Select Experiences</p>
-              <div className="mt-4 p-4 bg-[#E8F5E9] rounded-lg">
-                <p className="text-sm text-gray-600">Country: <span className="font-bold text-[#2D6A4F]">{country}</span></p>
-                <p className="text-sm text-gray-600">Currency: <span className="font-bold text-[#2D6A4F]">{currency}</span></p>
-                <p className="text-sm text-gray-600 mt-2">Categories: <span className="font-bold text-[#2D6A4F]">{selectedCategories.join(', ')}</span></p>
-              </div>
-            </div>
-
-            <p className="text-lg font-semibold text-gray-700 mb-4">
-              Select one or more experiences:
-            </p>
-
-            <div className="space-y-3 mb-8">
-              {filteredExperiences.map((experience: any) => {
-                const adultPrice = experience.priceUSD.adult;
-                const childPrice = experience.priceUSD.child;
-                const displayAdultPrice = isLocalSriLankan ? adultPrice * USD_TO_LKR : adultPrice;
-                const displayChildPrice = isLocalSriLankan ? childPrice * USD_TO_LKR : childPrice;
-                const isSelected = booking.experiences.includes(experience.name);
-                const hasSlots = hasTimeSlots(experience.name);
-
-                return (
-                  <button
-                    key={experience.name}
-                    onClick={() => hasSlots && handleExperienceSelect(experience.name)}
-                    disabled={!hasSlots}
-                    className={`w-full p-6 rounded-lg border-2 transition text-left flex items-start gap-4 ${
-                      !hasSlots
-                        ? 'bg-gray-100 border-gray-300 opacity-50 cursor-not-allowed'
-                        : isSelected
-                        ? 'bg-[#B7E4C7] border-[#2D6A4F]'
-                        : 'bg-[#E8F5E9] border-[#B7E4C7] hover:bg-[#D4EDDA]'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => handleExperienceSelect(experience.name)}
-                      disabled={!hasSlots}
-                      className="w-5 h-5 mt-1 accent-[#2D6A4F] cursor-pointer disabled:cursor-not-allowed"
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <h3 className="font-bold text-lg mb-2">{experience.name}</h3>
-                        {!hasSlots && (
-                          <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded whitespace-nowrap ml-2">
-                            No slots available
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-6">
-                        <div>
-                          <p className="text-xs text-gray-600">Adult</p>
-                          <p className="font-semibold text-[#2D6A4F]">
-                            {currency === 'LKR' ? 'Rs' : '$'} {displayAdultPrice.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-600">Child</p>
-                          <p className="font-semibold text-[#2D6A4F]">
-                            {currency === 'LKR' ? 'Rs' : '$'} {displayChildPrice.toLocaleString()}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {booking.experiences.length > 0 && (
-              <div className="bg-gradient-to-r from-[#2D6A4F] to-[#52B788] text-white p-6 rounded-lg mb-8">
-                <p className="text-lg font-semibold mb-2">
-                  Selected: {booking.experiences.length} experience{booking.experiences.length !== 1 ? 's' : ''}
-                </p>
-                <p className="text-sm opacity-90 mb-4">{booking.experiences.join(', ')}</p>
-                <button
-                  onClick={() => setStep('datetime')}
-                  className="w-full bg-white text-[#2D6A4F] hover:bg-gray-100 font-semibold py-3 px-6 rounded-lg transition text-lg"
-                >
-                  Continue to Date & Time →
-                </button>
-              </div>
-            )}
-
-            {booking.experiences.length === 0 && (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <p className="text-gray-500 text-lg">
-                  Select at least one experience to proceed
                 </p>
               </div>
             )}
