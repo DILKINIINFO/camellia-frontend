@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
@@ -70,6 +69,17 @@ export default function Dashboard() {
       totalPaid: '$62',
       status: 'completed'
     },
+    { // Adding a new completed booking for another plantation to demonstrate the dropdown
+      id: 'CAM-458',
+      bookingReference: 'CAM-458',
+      plantationName: 'Haputale Estate',
+      date: 'Wednesday, August 21, 2024',
+      time: '10:00 AM',
+      guests: '2 Adults',
+      experiences: ['Heritage Tour'],
+      totalPaid: '$76',
+      status: 'completed'
+    },
   ];
 
   const upcomingExperiences = allBookings.filter(b => b.status === 'upcoming');
@@ -83,7 +93,7 @@ export default function Dashboard() {
       rating: 5,
       reviewText: "The tea plucking experience was authentic and educational. Learned so much about the hard work that goes into every cup of tea.",
       reviewDate: "October 20, 2024",
-      image: "https://images.unsplash.com/photo-1619552684829-87c24479e000?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w1MDcxMzJ8MHwxfHNlYXJjaHwxfHx0ZWElMjBwbHVja2luZ3xlbnwwfHx8fDE3MTU3NTY5NjF8MA&ixlib=rb-4.0.3&q=80&w=1080"
+      image: "/images/about.png"
     },
     {
       id: 2,
@@ -138,6 +148,9 @@ export default function Dashboard() {
       </div>
     );
   };
+
+  // Get unique plantation names from past experiences for the review modal dropdown
+  const experiencedPlantationNames = Array.from(new Set(pastExperiences.map(booking => booking.plantationName)));
 
   return (
     <div className="min-h-screen bg-white font-sans text-[#1B4332]">
@@ -310,7 +323,7 @@ export default function Dashboard() {
           onClose={() => setIsReviewModalOpen(false)}
           onSubmit={handleReviewSubmit}
           // Pass the list of unique plantation names from past experiences
-          experiencedPlantations={Array.from(new Set(pastExperiences.map(booking => booking.plantationName)))}
+          experiencedPlantations={experiencedPlantationNames}
           initialSelectedPlantation={selectedBookingForReview?.plantationName || ''} // Pre-select if opened from booking
         />
       )}
