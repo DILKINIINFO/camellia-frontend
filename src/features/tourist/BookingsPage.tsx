@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { CheckCircle2} from "lucide-react";
+
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
 import TouristDetailsModal, { type TouristDetails } from './TouristDetailsModal'; // Import the new modal and type
@@ -24,7 +24,9 @@ export default function BookingsPage() {
   const plantation = id ? PLANTATION_DATA[id] : null;
 
   const [step, setStep] = useState<Step>('country');
-  const [country, setCountry] = useState<string>('');
+  const [selectedCountryOption, setSelectedCountryOption] = useState<'Sri Lanka' | 'Other' | ''>(''); // New state for initial country choice
+  const [otherCountryInput, setOtherCountryInput] = useState<string>(''); // New state for 'Other Countries' input
+  const [country, setCountry] = useState<string>(''); // Actual country value
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [booking, setBooking] = useState<Booking>({
     adults: 1,
@@ -56,10 +58,27 @@ export default function BookingsPage() {
   const isLocalSriLankan = country === 'Sri Lanka';
   const currency = isLocalSriLankan ? 'LKR' : 'USD';
 
-  const handleCountrySelect = (selectedCountry: string) => {
-    setCountry(selectedCountry);
-    setStep('category');
+  const handleCountryOptionSelect = (option: 'Sri Lanka' | 'Other') => {
+    setSelectedCountryOption(option);
+    if (option === 'Sri Lanka') {
+      setCountry('Sri Lanka');
+      setOtherCountryInput(''); // Clear other country input if Sri Lanka is selected
+    } else {
+      setCountry(''); // Clear country if 'Other' is selected, will be set by input
+    }
   };
+
+  const handleOtherCountryInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOtherCountryInput(e.target.value);
+    setCountry(e.target.value); // Set the actual country value
+  };
+
+  const handleNextCountryStep = () => {
+    if (country) {
+      setStep('category');
+    }
+  };
+
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategories((prev) =>
@@ -148,13 +167,14 @@ export default function BookingsPage() {
           totalPrice: totalDisplayPrice,
           currency: currency
         },
-        touristDetails: details,
+        touristDetails: { ...details, country: country }, // Ensure the final country is passed
       },
     });
   };
 
   // Step 1: Country Selection
   if (step === 'country') {
+    const isNextDisabled = !country || (selectedCountryOption === 'Other' && !otherCountryInput.trim());
     return (
       <div className="min-h-screen bg-white font-sans text-[#1B4332]">
         <Navbar />
@@ -175,27 +195,64 @@ export default function BookingsPage() {
               <p className="text-lg font-semibold text-gray-700 mb-6">
                 Where are you from?
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {['Sri Lanka', 'USA', 'UK', 'Australia', 'Canada', 'Other Countries'].map(
-                  (countryOption) => (
-                    <button
-                      key={countryOption}
-                      onClick={() => handleCountrySelect(countryOption)}
-                      className="bg-white border-2 border-[#B7E4C7] text-[#2D6A4F] hover:bg-[#B7E4C7] hover:text-white font-semibold py-4 px-6 rounded-lg transition text-lg flex items-center justify-between"
-                    >
-                      {countryOption}
-                      <ChevronRight size={20} />
-                    </button>
-                  )
-                )}
+              <div className="space-y-4 mb-6">
+                <button
+                  onClick={() => handleCountryOptionSelect('Sri Lanka')}
+                  className={`w-full p-4 rounded-lg border-2 transition text-left flex items-center justify-between ${
+                    selectedCountryOption === 'Sri Lanka'
+                      ? 'bg-[#B7E4C7] border-[#2D6A4F]'
+                      : 'bg-white border-[#B7E4C7] hover:bg-[#D4EDDA]'
+                  }`}
+                >
+                  Sri Lanka
+                  {selectedCountryOption === 'Sri Lanka' && <CheckCircle2 size={20} className="text-[#2D6A4F]" />}
+                </button>
+                <button
+                  onClick={() => handleCountryOptionSelect('Other')}
+                  className={`w-full p-4 rounded-lg border-2 transition text-left flex items-center justify-between ${
+                    selectedCountryOption === 'Other'
+                      ? 'bg-[#B7E4C7] border-[#2D6A4F]'
+                      : 'bg-white border-[#B7E4C7] hover:bg-[#D4EDDA]'
+                  }`}
+                >
+                  Other Countries
+                  {selectedCountryOption === 'Other' && <CheckCircle2 size={20} className="text-[#2D6A4F]" />}
+                </button>
               </div>
+
+              {selectedCountryOption === 'Other' && (
+                <div className="mb-6">
+                  <label htmlFor="otherCountryInput" className="block text-sm font-semibold mb-2 text-gray-700">
+                    Please specify your country:
+                  </label>
+                  <input
+                    type="text"
+                    id="otherCountryInput"
+                    value={otherCountryInput}
+                    onChange={handleOtherCountryInputChange}
+                    placeholder="E.g., United States"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F]"
+                    required
+                  />
+                </div>
+              )}
+
+              <button
+                onClick={handleNextCountryStep}
+                disabled={isNextDisabled}
+                className="w-full bg-[#52B788] hover:bg-[#40916c] disabled:bg-gray-300 text-white font-semibold py-3 px-6 rounded-lg transition text-lg"
+              >
+                Next
+              </button>
             </div>
 
             <div className="text-center">
               <p className="text-gray-600">
-                {isLocalSriLankan
+                {country === 'Sri Lanka'
                   ? 'Local Tourist - Prices in LKR'
-                  : 'Foreign Tourist - Prices in USD'}
+                  : country
+                  ? `Foreign Tourist (${country}) - Prices in USD`
+                  : 'Select your country to see pricing details'}
               </p>
             </div>
           </div>
@@ -204,6 +261,7 @@ export default function BookingsPage() {
       </div>
     );
   }
+
 
   // Step 2: Category Selection
   if (step === 'category') {
