@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
@@ -15,7 +16,7 @@ interface Booking {
   time: string;
 }
 
-type Step = 'country' | 'category' | 'datetime' | 'guests' | 'payment'; // Removed 'details' step
+type Step = 'country' | 'category' | 'datetime' | 'guests' | 'details'; // Renamed 'payment' to 'details' to reflect next step
 
 export default function BookingsPage() {
   const { id } = useParams();
@@ -33,8 +34,7 @@ export default function BookingsPage() {
     time: '',
   });
   const [capacityExceeded, setCapacityExceeded] = useState(false);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // New state for modal
-  const [touristDetails, setTouristDetails] = useState<TouristDetails | null>(null); // New state for tourist details
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // State for modal
 
   if (!plantation) {
     return (
@@ -115,17 +115,42 @@ export default function BookingsPage() {
     setBooking({ ...booking, [type]: newValue });
   };
 
-  const handleConfirmBooking = () => {
+  const handleProceedToDetails = () => {
     setIsDetailsModalOpen(true); // Open the details modal
   };
 
   // Handler for when tourist details are submitted from the modal
   const handleTouristDetailsSubmit = (details: TouristDetails) => {
-    setTouristDetails(details);
     setIsDetailsModalOpen(false);
-    setStep('payment'); // Move to the payment step after details are captured
-    // In a real application, you would now send this booking and tourist data to a backend
-    console.log("Booking confirmed with details:", { booking, details });
+
+    let totalDisplayPrice = 0;
+    booking.experiences.forEach((expName) => {
+      const exp = plantation.experiences.find((e: any) => e.name === expName);
+      if (exp) {
+        const adultPrice = exp.priceUSD.adult;
+        const childPrice = exp.priceUSD.child;
+        const displayAdultPrice = isLocalSriLankan ? adultPrice * USD_TO_LKR : adultPrice;
+        const displayChildPrice = isLocalSriLankan ? childPrice * USD_TO_LKR : childPrice;
+        totalDisplayPrice += displayAdultPrice * booking.adults + displayChildPrice * booking.children;
+      }
+    });
+
+    // Navigate to payment page, passing all collected data via state
+    navigate('/payment', {
+      state: {
+        bookingSummary: {
+          plantationName: plantation.name,
+          experiences: booking.experiences,
+          date: booking.date,
+          time: booking.time,
+          adults: booking.adults,
+          children: booking.children,
+          totalPrice: totalDisplayPrice,
+          currency: currency
+        },
+        touristDetails: details,
+      },
+    });
   };
 
   // Step 1: Country Selection
@@ -143,7 +168,7 @@ export default function BookingsPage() {
                 ← Back to {plantation.name}
               </button>
               <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 1 of 4: Select Your Country</p>
+              <p className="text-lg text-gray-600">Step 1 of 5: Select Your Country</p>
             </div>
 
             <div className="bg-gradient-to-r from-[#E8F5E9] to-[#D4EDDA] p-8 rounded-lg border-2 border-[#B7E4C7] mb-8">
@@ -200,7 +225,7 @@ export default function BookingsPage() {
                 ← Back
               </button>
               <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 2 of 4: Select Categories</p>
+              <p className="text-lg text-gray-600">Step 2 of 5: Select Categories</p>
               <div className="mt-4 p-4 bg-[#E8F5E9] rounded-lg">
                 <p className="text-sm text-gray-600">Country: <span className="font-bold text-[#2D6A4F]">{country}</span></p>
                 <p className="text-sm text-gray-600">Currency: <span className="font-bold text-[#2D6A4F]">{currency}</span></p>
@@ -296,7 +321,7 @@ export default function BookingsPage() {
                 ← Back
               </button>
               <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 3 of 4: Select Date & Time</p>
+              <p className="text-lg text-gray-600">Step 3 of 5: Select Date & Time</p>
               <div className="mt-4 p-4 bg-[#E8F5E9] rounded-lg">
                 <p className="text-sm text-gray-600">Experiences: <span className="font-bold text-[#2D6A4F]">{booking.experiences.join(', ')}</span></p>
                 <p className="text-sm text-gray-600 mt-2">Showing available time slots for all selected experiences</p>
@@ -401,7 +426,7 @@ export default function BookingsPage() {
                 ← Back
               </button>
               <h1 className="text-4xl font-bold font-serif mb-2">Book Experience</h1>
-              <p className="text-lg text-gray-600">Step 4 of 4: Select Guests</p>
+              <p className="text-lg text-gray-600">Step 4 of 5: Select Guests</p>
             </div>
 
             <div className="bg-[#E8F5E9] border-2 border-[#B7E4C7] rounded-lg p-8 mb-8">
@@ -483,9 +508,9 @@ export default function BookingsPage() {
                         </p>
                       </div>
                       <div className="text-xs text-gray-600 flex gap-4">
-                        <span>Adults ({booking.adults}): ${(exp.displayAdultPrice * booking.adults).toLocaleString()}</span>
+                        <span>Adults ({booking.adults}): {currency === 'LKR' ? 'Rs' : '$'}{(exp.displayAdultPrice * booking.adults).toLocaleString()}</span>
                         {booking.children > 0 && (
-                          <span>Children ({booking.children}): ${(exp.displayChildPrice * booking.children).toLocaleString()}</span>
+                          <span>Children ({booking.children}): {currency === 'LKR' ? 'Rs' : '$'}{(exp.displayChildPrice * booking.children).toLocaleString()}</span>
                         )}
                       </div>
                     </div>
@@ -535,10 +560,10 @@ export default function BookingsPage() {
                 Back
               </button>
               <button
-                onClick={handleConfirmBooking} // This will now open the modal
+                onClick={handleProceedToDetails} // This will now open the modal
                 className="flex-1 bg-[#52B788] hover:bg-[#40916c] text-white font-semibold py-3 px-6 rounded-lg transition text-lg"
               >
-                Confirm Booking
+                Continue to Details
               </button>
             </div>
           </div>
@@ -551,88 +576,6 @@ export default function BookingsPage() {
           onClose={() => setIsDetailsModalOpen(false)}
           onSubmit={handleTouristDetailsSubmit}
         />
-      </div>
-    );
-  }
-
-  // New: Payment Step (or final confirmation)
-  if (step === 'payment') {
-    if (!touristDetails) {
-      // Should not happen if flow is correct, but as a safeguard
-      return <p>Error: Tourist details not available. Please go back.</p>;
-    }
-
-    // Calculate total price for all selected experiences again for display
-    let totalDisplayPrice = 0;
-    booking.experiences.forEach((expName) => {
-      const exp = plantation.experiences.find((e: any) => e.name === expName);
-      if (exp) {
-        const adultPrice = exp.priceUSD.adult;
-        const childPrice = exp.priceUSD.child;
-        const displayAdultPrice = isLocalSriLankan ? adultPrice * USD_TO_LKR : adultPrice;
-        const displayChildPrice = isLocalSriLankan ? childPrice * USD_TO_LKR : childPrice;
-        totalDisplayPrice += displayAdultPrice * booking.adults + displayChildPrice * booking.children;
-      }
-    });
-
-    return (
-      <div className="min-h-screen bg-white font-sans text-[#1B4332]">
-        <Navbar />
-        <main className="py-16 px-12">
-          <div className="max-w-2xl mx-auto">
-            <h1 className="text-4xl font-bold font-serif mb-2">Booking Confirmation & Payment</h1>
-            <p className="text-lg text-gray-600 mb-8">Final step: Review your details and proceed to payment.</p>
-
-            {/* Booking Summary */}
-            <div className="bg-[#E8F5E9] border-2 border-[#B7E4C7] rounded-lg p-8 mb-8">
-              <h3 className="font-bold text-xl mb-4 text-[#2D6A4F]">Your Booking</h3>
-              <div className="space-y-3">
-                <p><strong>Plantation:</strong> {plantation.name}</p>
-                <p><strong>Experiences:</strong> {booking.experiences.join(', ')}</p>
-                <p><strong>Date & Time:</strong> {booking.date} at {booking.time}</p>
-                <p><strong>Guests:</strong> {booking.adults} Adults, {booking.children} Children</p>
-                <p><strong>Total Price:</strong> {currency === 'LKR' ? 'Rs' : '$'} {totalDisplayPrice.toLocaleString()}</p>
-              </div>
-            </div>
-
-            {/* Tourist Details Summary */}
-            <div className="bg-gradient-to-r from-[#2D6A4F] to-[#52B788] text-white p-8 rounded-lg mb-8">
-              <h3 className="font-bold text-xl mb-4">Your Details</h3>
-              <div className="space-y-3">
-                <p><strong>Full Name:</strong> {touristDetails.fullName}</p>
-                <p><strong>Email:</strong> {touristDetails.email}</p>
-                <p><strong>Phone:</strong> {touristDetails.phone}</p>
-                <p><strong>NIC/Passport:</strong> {touristDetails.nicPassportNumber}</p>
-                <p><strong>Country:</strong> {touristDetails.country}</p>
-                <p><strong>City:</strong> {touristDetails.city}</p>
-              </div>
-            </div>
-
-            {/* Payment Section (Placeholder) */}
-            <div className="bg-white border-2 border-gray-200 rounded-lg p-8 mb-8 text-center">
-              <h3 className="font-bold text-2xl mb-4 text-[#1B4332]">Proceed to Secure Payment</h3>
-              <p className="text-gray-700 mb-6">
-                You will be redirected to our secure payment gateway to complete your booking.
-              </p>
-              <button
-                onClick={() => alert("Redirecting to payment gateway...")} // Placeholder for actual payment logic
-                className="bg-[#52B788] hover:bg-[#40916c] text-white font-semibold py-3 px-10 rounded-lg transition text-lg"
-              >
-                Pay Now
-              </button>
-            </div>
-
-            <div className="text-center">
-              <button
-                onClick={() => setStep('guests')} // Allow going back to edit guest count
-                className="text-[#2D6A4F] hover:text-[#1B4332] font-semibold text-lg underline"
-              >
-                ← Back to Edit Booking
-              </button>
-            </div>
-          </div>
-        </main>
-        <Footer />
       </div>
     );
   }
