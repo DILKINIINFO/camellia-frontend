@@ -5,11 +5,13 @@ import { X, Upload } from 'lucide-react';
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (review: { rating: number; reviewText: string; image?: string }) => void;
-  plantationName: string; // To display which plantation is being reviewed
+  onSubmit: (review: { plantationName: string; rating: number; reviewText: string; image?: string }) => void;
+  experiencedPlantations: string[]; // List of plantations the user has experienced
+  initialSelectedPlantation?: string; // Optional: to pre-select a plantation if opened from a specific booking
 }
 
-export default function ReviewModal({ isOpen, onClose, onSubmit, plantationName }: ReviewModalProps) {
+export default function ReviewModal({ isOpen, onClose, onSubmit, experiencedPlantations, initialSelectedPlantation = '' }: ReviewModalProps) {
+  const [selectedPlantation, setSelectedPlantation] = useState(initialSelectedPlantation);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -36,17 +38,15 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, plantationName 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (rating === 0 || reviewText.trim() === '') {
-      alert('Please provide a rating and your experience.');
+    if (selectedPlantation === '' || rating === 0 || reviewText.trim() === '') {
+      alert('Please select a plantation, provide a rating, and your experience.');
       return;
     }
 
-    // In a real application, you would upload the image to a server and get a URL
-    // For this mock, we'll use the preview URL or a placeholder if no image uploaded
     const imageUrl = imagePreviewUrl || undefined;
 
-    onSubmit({ rating, reviewText, image: imageUrl });
-    onClose(); // Close modal after submission
+    onSubmit({ plantationName: selectedPlantation, rating, reviewText, image: imageUrl });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -56,7 +56,7 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, plantationName 
       <div className="bg-white rounded-lg shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-[#2D6A4F]">Write a Review for {plantationName}</h2>
+          <h2 className="text-2xl font-bold text-[#2D6A4F]">Write a Review</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
@@ -67,6 +67,26 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, plantationName 
 
         {/* Form Content */}
         <form onSubmit={handleSubmit} className="p-6">
+          {/* Plantation Selection */}
+          <div className="mb-6">
+            <label htmlFor="plantationSelect" className="block text-lg font-semibold mb-3 text-gray-700">
+              Select Plantation <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="plantationSelect"
+              value={selectedPlantation}
+              onChange={(e) => setSelectedPlantation(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] text-base"
+              required
+              disabled={!!initialSelectedPlantation} // Disable if a plantation is pre-selected
+            >
+              <option value="" disabled>Choose a plantation you visited</option>
+              {experiencedPlantations.map((pName) => (
+                <option key={pName} value={pName}>{pName}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Rating */}
           <div className="mb-6">
             <label className="block text-lg font-semibold mb-3 text-gray-700">

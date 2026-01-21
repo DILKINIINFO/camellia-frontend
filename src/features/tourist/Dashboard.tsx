@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
-import ReviewModal from '../../features/tourist/ReviewModal';
+import ReviewModal from './ReviewModal';
 import BookingDetailsModal from './BookingDetailsModal'; // Import the new BookingDetailsModal
 
 interface ExperienceBooking {
@@ -96,25 +96,30 @@ export default function Dashboard() {
     }
   ]);
 
-  const handleOpenReviewModal = (booking: ExperienceBooking) => {
-    setSelectedBookingForReview(booking);
+  const handleOpenReviewModal = (booking: ExperienceBooking | null = null) => { // Make booking optional
+    setSelectedBookingForReview(booking); // Can be null if opening from "My Reviews" tab
     setIsReviewModalOpen(true);
   };
 
-  const handleReviewSubmit = (newReview: Omit<Review, 'id' | 'reviewDate' | 'author'>) => {
-    if (selectedBookingForReview) {
-      const newReviewWithId: Review = {
-        ...newReview,
-        id: reviews.length + 1,
-        reviewDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-        author: 'Current User',
-        plantationName: selectedBookingForReview.plantationName,
-      };
-      setReviews((prev) => [...prev, newReviewWithId]);
-      setIsReviewModalOpen(false);
-      setSelectedBookingForReview(null);
-      setActiveTab('reviews');
+  const handleReviewSubmit = (newReview: Omit<Review, 'id' | 'reviewDate' | 'author'> & { plantationName: string }) => {
+    // Check if a review already exists for this plantation by the current user (simple check)
+    const existingReview = reviews.find(r => r.plantationName === newReview.plantationName && r.author === 'Current User');
+    if (existingReview) {
+      alert(`You have already submitted a review for ${newReview.plantationName}.`);
+      // Optionally, allow editing the existing review or prevent duplicate submission
+      return;
     }
+
+    const newReviewWithId: Review = {
+      ...newReview,
+      id: reviews.length + 1,
+      reviewDate: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      author: 'Current User', // Placeholder for actual user name
+    };
+    setReviews((prev) => [...prev, newReviewWithId]);
+    setIsReviewModalOpen(false);
+    setSelectedBookingForReview(null);
+    setActiveTab('reviews');
   };
 
   const handleOpenBookingDetails = (booking: ExperienceBooking) => {
@@ -267,6 +272,16 @@ export default function Dashboard() {
                   <p className="text-gray-500 mt-2">Complete an experience and share your thoughts!</p>
                 </div>
               )}
+
+              {/* Add New Review button in 'My Reviews' tab */}
+              <div className="text-center mt-8">
+                <button
+                  onClick={() => handleOpenReviewModal(null)} // Open modal without pre-selecting a booking
+                  className="bg-[#52B788] hover:bg-[#40916c] text-white font-semibold py-3 px-8 rounded-lg transition text-lg"
+                >
+                  Write a New Review
+                </button>
+              </div>
             </div>
           )}
 
@@ -289,12 +304,14 @@ export default function Dashboard() {
       </main>
 
       {/* Review Modal */}
-      {isReviewModalOpen && selectedBookingForReview && (
+      {isReviewModalOpen && (
         <ReviewModal
           isOpen={isReviewModalOpen}
           onClose={() => setIsReviewModalOpen(false)}
           onSubmit={handleReviewSubmit}
-          plantationName={selectedBookingForReview.plantationName}
+          // Pass the list of unique plantation names from past experiences
+          experiencedPlantations={Array.from(new Set(pastExperiences.map(booking => booking.plantationName)))}
+          initialSelectedPlantation={selectedBookingForReview?.plantationName || ''} // Pre-select if opened from booking
         />
       )}
 
@@ -304,7 +321,11 @@ export default function Dashboard() {
           isOpen={isBookingDetailsModalOpen}
           onClose={() => setIsBookingDetailsModalOpen(false)}
           booking={selectedBookingDetails}
-          onWriteReview={selectedBookingDetails.status === 'completed' ? handleOpenReviewModal : undefined}
+          // Pass a function that triggers the ReviewModal with the specific booking
+          onWriteReview={(bookingToReview) => {
+            setIsBookingDetailsModalOpen(false); // Close details modal
+            handleOpenReviewModal(bookingToReview); // Open review modal for this booking
+          }}
         />
       )}
 
