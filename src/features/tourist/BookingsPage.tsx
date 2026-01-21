@@ -3,8 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
+import TouristDetailsModal, { type TouristDetails } from './TouristDetailsModal'; // Import the new modal and type
 import { PLANTATION_DATA } from './PlantationDetail';
-
 const USD_TO_LKR = 330;
 
 interface Booking {
@@ -15,7 +15,7 @@ interface Booking {
   time: string;
 }
 
-type Step = 'country' | 'category' | 'datetime' | 'guests' | 'details' | 'payment';
+type Step = 'country' | 'category' | 'datetime' | 'guests' | 'payment'; // Removed 'details' step
 
 export default function BookingsPage() {
   const { id } = useParams();
@@ -33,6 +33,8 @@ export default function BookingsPage() {
     time: '',
   });
   const [capacityExceeded, setCapacityExceeded] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false); // New state for modal
+  const [touristDetails, setTouristDetails] = useState<TouristDetails | null>(null); // New state for tourist details
 
   if (!plantation) {
     return (
@@ -67,16 +69,12 @@ export default function BookingsPage() {
     );
   };
 
-  // experience selection removed — categories drive which experiences are included
-
   const getCommonTimeSlots = () => {
     if (!selectedCategories || selectedCategories.length === 0) return [];
 
-    // Collect all experiences that match selected categories
     const exps = plantation.experiences.filter((e: any) => selectedCategories.includes(e.category));
     if (exps.length === 0) return [];
 
-    // Aggregate slots by date+time: sum capacities and booked counts
     const slotMap: Record<string, { date: string; time: string; capacity: number; booked: number }> = {};
 
     exps.forEach((exp: any) => {
@@ -92,7 +90,6 @@ export default function BookingsPage() {
     });
 
     const slots = Object.values(slotMap);
-    // sort by date then time (lexicographic ok for current formats)
     slots.sort((a, b) => (a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)));
     return slots;
   };
@@ -119,7 +116,16 @@ export default function BookingsPage() {
   };
 
   const handleConfirmBooking = () => {
-    setStep('details');
+    setIsDetailsModalOpen(true); // Open the details modal
+  };
+
+  // Handler for when tourist details are submitted from the modal
+  const handleTouristDetailsSubmit = (details: TouristDetails) => {
+    setTouristDetails(details);
+    setIsDetailsModalOpen(false);
+    setStep('payment'); // Move to the payment step after details are captured
+    // In a real application, you would now send this booking and tourist data to a backend
+    console.log("Booking confirmed with details:", { booking, details });
   };
 
   // Step 1: Country Selection
@@ -248,7 +254,6 @@ export default function BookingsPage() {
                 <p className="text-sm opacity-90 mb-4">{selectedCategories.join(', ')}</p>
                 <button
                   onClick={() => {
-                    // populate booking.experiences from selected categories
                     const exps = plantation.experiences.filter((e: any) => selectedCategories.includes(e.category));
                     setBooking((prev) => ({ ...prev, experiences: exps.map((e: any) => e.name) }));
                     setStep('datetime');
@@ -360,7 +365,6 @@ export default function BookingsPage() {
 
   // Step 4: Guests Selection
   if (step === 'guests') {
-    // Calculate total price for all selected experiences
     let totalDisplayPrice = 0;
     const experiencePrices: { name: string; adultPrice: number; childPrice: number; displayAdultPrice: number; displayChildPrice: number }[] = [];
 
@@ -531,7 +535,7 @@ export default function BookingsPage() {
                 Back
               </button>
               <button
-                onClick={handleConfirmBooking}
+                onClick={handleConfirmBooking} // This will now open the modal
                 className="flex-1 bg-[#52B788] hover:bg-[#40916c] text-white font-semibold py-3 px-6 rounded-lg transition text-lg"
               >
                 Confirm Booking
@@ -540,7 +544,98 @@ export default function BookingsPage() {
           </div>
         </main>
         <Footer />
+
+        {/* Tourist Details Modal */}
+        <TouristDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => setIsDetailsModalOpen(false)}
+          onSubmit={handleTouristDetailsSubmit}
+        />
       </div>
     );
   }
+
+  // New: Payment Step (or final confirmation)
+  if (step === 'payment') {
+    if (!touristDetails) {
+      // Should not happen if flow is correct, but as a safeguard
+      return <p>Error: Tourist details not available. Please go back.</p>;
+    }
+
+    // Calculate total price for all selected experiences again for display
+    let totalDisplayPrice = 0;
+    booking.experiences.forEach((expName) => {
+      const exp = plantation.experiences.find((e: any) => e.name === expName);
+      if (exp) {
+        const adultPrice = exp.priceUSD.adult;
+        const childPrice = exp.priceUSD.child;
+        const displayAdultPrice = isLocalSriLankan ? adultPrice * USD_TO_LKR : adultPrice;
+        const displayChildPrice = isLocalSriLankan ? childPrice * USD_TO_LKR : childPrice;
+        totalDisplayPrice += displayAdultPrice * booking.adults + displayChildPrice * booking.children;
+      }
+    });
+
+    return (
+      <div className="min-h-screen bg-white font-sans text-[#1B4332]">
+        <Navbar />
+        <main className="py-16 px-12">
+          <div className="max-w-2xl mx-auto">
+            <h1 className="text-4xl font-bold font-serif mb-2">Booking Confirmation & Payment</h1>
+            <p className="text-lg text-gray-600 mb-8">Final step: Review your details and proceed to payment.</p>
+
+            {/* Booking Summary */}
+            <div className="bg-[#E8F5E9] border-2 border-[#B7E4C7] rounded-lg p-8 mb-8">
+              <h3 className="font-bold text-xl mb-4 text-[#2D6A4F]">Your Booking</h3>
+              <div className="space-y-3">
+                <p><strong>Plantation:</strong> {plantation.name}</p>
+                <p><strong>Experiences:</strong> {booking.experiences.join(', ')}</p>
+                <p><strong>Date & Time:</strong> {booking.date} at {booking.time}</p>
+                <p><strong>Guests:</strong> {booking.adults} Adults, {booking.children} Children</p>
+                <p><strong>Total Price:</strong> {currency === 'LKR' ? 'Rs' : '$'} {totalDisplayPrice.toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* Tourist Details Summary */}
+            <div className="bg-gradient-to-r from-[#2D6A4F] to-[#52B788] text-white p-8 rounded-lg mb-8">
+              <h3 className="font-bold text-xl mb-4">Your Details</h3>
+              <div className="space-y-3">
+                <p><strong>Full Name:</strong> {touristDetails.fullName}</p>
+                <p><strong>Email:</strong> {touristDetails.email}</p>
+                <p><strong>Phone:</strong> {touristDetails.phone}</p>
+                <p><strong>NIC/Passport:</strong> {touristDetails.nicPassportNumber}</p>
+                <p><strong>Country:</strong> {touristDetails.country}</p>
+                <p><strong>City:</strong> {touristDetails.city}</p>
+              </div>
+            </div>
+
+            {/* Payment Section (Placeholder) */}
+            <div className="bg-white border-2 border-gray-200 rounded-lg p-8 mb-8 text-center">
+              <h3 className="font-bold text-2xl mb-4 text-[#1B4332]">Proceed to Secure Payment</h3>
+              <p className="text-gray-700 mb-6">
+                You will be redirected to our secure payment gateway to complete your booking.
+              </p>
+              <button
+                onClick={() => alert("Redirecting to payment gateway...")} // Placeholder for actual payment logic
+                className="bg-[#52B788] hover:bg-[#40916c] text-white font-semibold py-3 px-10 rounded-lg transition text-lg"
+              >
+                Pay Now
+              </button>
+            </div>
+
+            <div className="text-center">
+              <button
+                onClick={() => setStep('guests')} // Allow going back to edit guest count
+                className="text-[#2D6A4F] hover:text-[#1B4332] font-semibold text-lg underline"
+              >
+                ← Back to Edit Booking
+              </button>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  return null; // Should not reach here
 }
