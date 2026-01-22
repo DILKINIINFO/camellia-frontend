@@ -8,7 +8,7 @@ import PlantationDetailsManagement from './PlantationDetailsManagement';
 import PlantationMediaManagement from '../plantation-admin/PlantationMediaManagement';
 import PlantationExperienceManagement from './PlantationExperienceManagement';
 import PlantationBookingManagement from '../plantation-admin/PlantationBookingManagement';
-import { Image, GalleryHorizontal, Package, CalendarCheck } from 'lucide-react';
+import { Image, GalleryHorizontal, Package, CalendarCheck, Wallet } from 'lucide-react'; // Added Wallet icon
 
 // Define a type for a simplified plantation admin user (can be extended)
 interface PlantationAdminUser {

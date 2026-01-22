@@ -72,11 +72,11 @@ export default function SignInModal({
       setIsLoading(false);
       onClose();
 
-      // Redirect to appropriate dashboard after successful sign-in
+      // Redirect to appropriate dashboard immediately after successful sign-in
       if (isAdmin) {
-        navigate('/plantation-admin/dashboard');
+        navigate('/plantation-admin/dashboard'); // Direct to admin dashboard
       } else {
-        navigate('/dashboard'); // Tourist dashboard
+        navigate('/dashboard'); // Direct to tourist dashboard
       }
 
     }, 1000);
