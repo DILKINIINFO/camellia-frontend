@@ -1,10 +1,18 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useState } from 'react';
 import SignInModal from './SignInModal';
 import { useAuth } from '../../context/AuthContext';
 
+// Mock admin users (copied from PlantationAdminDashboard for Navbar's awareness)
+const MOCK_PLANTATION_ADMINS: Record<string, { username: string; plantationId: string }> = {
+  'pedroadmin': { username: 'pedroadmin', plantationId: '1' },
+  'bluefieldadmin': { username: 'bluefieldadmin', plantationId: '2' },
+};
+
+
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate
   const { user, logOut } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -14,7 +22,13 @@ export default function Navbar() {
 
   const handleLogOut = () => {
     logOut();
+    navigate('/'); // Redirect to home after logout
   };
+
+  // Determine if the logged-in user is a plantation admin
+  const isPlantationAdmin = user && MOCK_PLANTATION_ADMINS[user.username];
+  const dashboardPath = isPlantationAdmin ? '/plantation-admin/dashboard' : '/dashboard';
+
 
   return (
     <>
@@ -35,7 +49,7 @@ export default function Navbar() {
         {user ? (
           <div className="flex items-center gap-4">
             <span className="text-gray-700 font-medium">Welcome, {user.username}!</span>
-            <Link to="/dashboard" className="bg-[#2D6A4F] text-white px-10 py-3 rounded-md text-lg font-medium hover:bg-[#1B4332] transition">
+            <Link to={dashboardPath} className="bg-[#2D6A4F] text-white px-10 py-3 rounded-md text-lg font-medium hover:bg-[#1B4332] transition">
               My Dashboard
             </Link>
             <button

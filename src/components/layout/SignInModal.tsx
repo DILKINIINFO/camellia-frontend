@@ -1,16 +1,25 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 
 interface SignInModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+// Mock admin users (copied for local use in modal)
+const MOCK_PLANTATION_ADMINS: Record<string, { username: string; plantationId: string }> = {
+  'pedroadmin': { username: 'pedroadmin', plantationId: '1' },
+  'bluefieldadmin': { username: 'bluefieldadmin', plantationId: '2' },
+};
+
+
 export default function SignInModal({
   isOpen,
   onClose,
 }: SignInModalProps) {
   const { signIn } = useAuth();
+  const navigate = useNavigate(); // Initialize useNavigate
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -46,15 +55,30 @@ export default function SignInModal({
 
     // Simulate API call
     setTimeout(() => {
-      signIn({
-        username,
-        email: `${username}@camellia.com`,
-      });
+      // Basic mock authentication:
+      // If username is 'pedroadmin' and password is 'password123', treat as admin
+      // Otherwise, treat as a regular tourist
+      const isAdmin = MOCK_PLANTATION_ADMINS[username] && password === 'password123'; // Simple password check
+      
+      const userData = isAdmin
+        ? { username, email: `${username}@camellia.com`, plantationId: MOCK_PLANTATION_ADMINS[username].plantationId } // Add plantationId for admin
+        : { username, email: `${username}@camellia.com` };
+
+      signIn(userData); // Update AuthContext
+
       setUsername('');
       setPassword('');
       setErrors({});
       setIsLoading(false);
       onClose();
+
+      // Redirect to appropriate dashboard after successful sign-in
+      if (isAdmin) {
+        navigate('/plantation-admin/dashboard');
+      } else {
+        navigate('/dashboard'); // Tourist dashboard
+      }
+
     }, 1000);
   };
 
@@ -69,6 +93,7 @@ export default function SignInModal({
       });
       setIsLoading(false);
       onClose();
+      navigate('/dashboard'); // Google sign-in assumes tourist for this mock
     }, 1000);
   };
 
