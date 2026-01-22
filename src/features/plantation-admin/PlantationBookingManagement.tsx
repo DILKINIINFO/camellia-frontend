@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CalendarCheck, User, Package, DollarSign, Filter } from 'lucide-react';
+import { Filter, CheckCircle, Clock, XCircle } from 'lucide-react'; // Added icons for status and sorting
 
 // Mock booking data (similar to what's used in Dashboard, but we'll filter by plantationId)
 interface Booking {
@@ -139,9 +139,8 @@ const formatDate = (dateString: string) => {
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
-      weekday: 'long',
       year: 'numeric',
-      month: 'long',
+      month: 'short',
       day: 'numeric',
     });
   } catch (e) {
@@ -153,14 +152,12 @@ const formatDate = (dateString: string) => {
 export default function PlantationBookingManagement({ plantationId }: PlantationBookingManagementProps) {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [filterStatus, setFilterStatus] = useState<'all' | 'upcoming' | 'completed' | 'cancelled'>('all');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // Sort by date
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc'); // Default to newest first
   const [isLoading, setIsLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  // Removed `message` state as booking actions are no longer available
 
   useEffect(() => {
-    // Simulate fetching bookings for the specific plantation
     setIsLoading(true);
-    setMessage('');
     setTimeout(() => {
       const filteredBookings = MOCK_ALL_BOOKINGS.filter(
         (booking) => booking.plantationId === plantationId
@@ -169,19 +166,6 @@ export default function PlantationBookingManagement({ plantationId }: Plantation
       setIsLoading(false);
     }, 1000);
   }, [plantationId]);
-
-  const handleUpdateBookingStatus = async (bookingId: string, newStatus: Booking['status']) => {
-    setIsLoading(true);
-    setMessage('');
-    // Simulate API call to update booking status
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    setBookings((prev) =>
-      prev.map((b) => (b.id === bookingId ? { ...b, status: newStatus } : b))
-    );
-    setMessage(`Booking ${bookingId} status updated to ${newStatus}.`);
-    setIsLoading(false);
-  };
 
   const getFilteredAndSortedBookings = () => {
     let filtered = bookings;
@@ -198,15 +182,13 @@ export default function PlantationBookingManagement({ plantationId }: Plantation
 
   const displayedBookings = getFilteredAndSortedBookings();
 
+  const upcomingCount = bookings.filter(b => b.status === 'upcoming').length;
+  const completedCount = bookings.filter(b => b.status === 'completed').length;
+  const cancelledCount = bookings.filter(b => b.status === 'cancelled').length;
+
   return (
     <div className="bg-white p-8 rounded-lg shadow-md">
       <h2 className="text-3xl font-bold text-[#1B4332] mb-6">Manage Bookings</h2>
-
-      {message && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-md mb-6">
-          {message}
-        </div>
-      )}
 
       {isLoading ? (
         <div className="text-center py-12">
@@ -214,6 +196,31 @@ export default function PlantationBookingManagement({ plantationId }: Plantation
         </div>
       ) : (
         <>
+          {/* Booking Summary Counts */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="bg-blue-50 p-4 rounded-lg flex items-center gap-3">
+              <Clock size={24} className="text-blue-600" />
+              <div>
+                <p className="text-sm text-blue-700 font-medium">Upcoming Bookings</p>
+                <p className="text-2xl font-bold text-blue-800">{upcomingCount}</p>
+              </div>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg flex items-center gap-3">
+              <CheckCircle size={24} className="text-green-600" />
+              <div>
+                <p className="text-sm text-green-700 font-medium">Completed Bookings</p>
+                <p className="text-2xl font-bold text-green-800">{completedCount}</p>
+              </div>
+            </div>
+            <div className="bg-red-50 p-4 rounded-lg flex items-center gap-3">
+              <XCircle size={24} className="text-red-600" />
+              <div>
+                <p className="text-sm text-red-700 font-medium">Cancelled Bookings</p>
+                <p className="text-2xl font-bold text-red-800">{cancelledCount}</p>
+              </div>
+            </div>
+          </div>
+
           {/* Filters and Sorting */}
           <div className="flex flex-wrap items-center gap-4 mb-8">
             <div className="flex items-center gap-2">
@@ -239,8 +246,8 @@ export default function PlantationBookingManagement({ plantationId }: Plantation
                 onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
                 className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
               >
-                <option value="asc">Oldest First</option>
                 <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
               </select>
             </div>
           </div>
@@ -250,61 +257,50 @@ export default function PlantationBookingManagement({ plantationId }: Plantation
               <p className="text-gray-600 text-lg">No bookings found for this plantation with the current filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {displayedBookings.map((booking) => (
-                <div key={booking.id} className="bg-gray-50 p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-xl font-bold text-[#2D6A4F]">{booking.bookingReference}</h3>
-                    <span
-                      className={`px-3 py-1 rounded-full text-sm font-semibold ${
-                        booking.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
-                        booking.status === 'completed' ? 'bg-green-100 text-green-700' :
-                        'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                    </span>
-                  </div>
-                  <div className="space-y-2 text-gray-700">
-                    <p className="flex items-center gap-2"><CalendarCheck size={18} className="text-gray-500" />
-                      <span className="font-semibold">{formatDate(booking.date)} at {booking.time}</span>
-                    </p>
-                    <p className="flex items-center gap-2"><User size={18} className="text-gray-500" />
-                      <span className="font-semibold">{booking.guests}</span>
-                    </p>
-                    <p className="flex items-center gap-2"><Package size={18} className="text-gray-500" />
-                      <span className="text-sm">{booking.experiences.join(', ')}</span>
-                    </p>
-                    <p className="flex items-center gap-2"><DollarSign size={18} className="text-gray-500" />
-                      <span className="font-bold text-[#1B4332]">{booking.totalPaid}</span>
-                    </p>
-                    <div className="border-t border-gray-200 pt-3 mt-3">
-                      <p className="font-semibold text-sm">Tourist: {booking.touristDetails.fullName}</p>
-                      <p className="text-xs text-gray-500">{booking.touristDetails.email}</p>
-                      <p className="text-xs text-gray-500">{booking.touristDetails.phone}</p>
-                      <p className="text-xs text-gray-500">{booking.touristDetails.country}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    {booking.status === 'upcoming' && (
-                      <button
-                        onClick={() => handleUpdateBookingStatus(booking.id, 'completed')}
-                        className="flex-1 bg-green-500 hover:bg-green-600 text-white text-sm py-2 rounded-lg transition"
-                      >
-                        Mark Completed
-                      </button>
-                    )}
-                    {(booking.status === 'upcoming' || booking.status === 'completed') && (
-                       <button
-                       onClick={() => handleUpdateBookingStatus(booking.id, 'cancelled')}
-                       className="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm py-2 rounded-lg transition"
-                     >
-                       Cancel Booking
-                     </button>
-                    )}
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border-collapse">
+                <thead>
+                  <tr className="bg-gray-100 border-b border-gray-200 text-left text-sm font-semibold text-gray-700">
+                    <th className="py-3 px-4 rounded-tl-lg">Reference</th>
+                    <th className="py-3 px-4">Date & Time</th>
+                    <th className="py-3 px-4">Tourist</th>
+                    <th className="py-3 px-4">Guests</th>
+                    <th className="py-3 px-4">Experiences</th>
+                    <th className="py-3 px-4">Total Paid</th>
+                    <th className="py-3 px-4 rounded-tr-lg">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayedBookings.map((booking) => (
+                    <tr key={booking.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-[#2D6A4F]">{booking.bookingReference}</td>
+                      <td className="py-3 px-4 text-gray-700">
+                        {formatDate(booking.date)} <br/> {booking.time}
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">
+                        <p className="font-medium">{booking.touristDetails.fullName}</p>
+                        <p className="text-xs text-gray-500">{booking.touristDetails.email}</p>
+                        <p className="text-xs text-gray-500">{booking.touristDetails.phone}</p>
+                        <p className="text-xs text-gray-500">{booking.touristDetails.country}</p>
+                      </td>
+                      <td className="py-3 px-4 text-gray-700">{booking.guests}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{booking.experiences.join(', ')}</td>
+                      <td className="py-3 px-4 font-bold text-[#1B4332]">{booking.totalPaid}</td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                            booking.status === 'upcoming' ? 'bg-blue-100 text-blue-700' :
+                            booking.status === 'completed' ? 'bg-green-100 text-green-700' :
+                            'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </>
