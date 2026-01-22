@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PlusCircle, Edit3, Trash2, Clock, X } from 'lucide-react';
+import { PlusCircle, Edit3, Trash2, Clock, X, DollarSign, Wallet } from 'lucide-react'; // Added Wallet icon
 
 // Re-using types from PlantationDetail.tsx and BookExperienceModal.tsx
 interface TimeSlot {
@@ -13,6 +13,7 @@ interface Experience {
   name: string;
   category: string;
   priceUSD: { adult: number; child: number };
+  priceLKR: { adult: number; child: number }; // Added LKR pricing
   timeSlots: TimeSlot[];
 }
 
@@ -40,6 +41,7 @@ function ExperienceModal({ isOpen, onClose, onSubmit, initialExperience }: Exper
       name: '',
       category: '',
       priceUSD: { adult: 0, child: 0 },
+      priceLKR: { adult: 0, child: 0 }, // Initialize LKR pricing
       timeSlots: [],
     }
   );
@@ -49,11 +51,16 @@ function ExperienceModal({ isOpen, onClose, onSubmit, initialExperience }: Exper
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    if (name === 'adultPrice') {
+    if (name === 'adultPriceUSD') {
       setFormData((prev) => ({ ...prev, priceUSD: { ...prev.priceUSD, adult: parseFloat(value) || 0 } }));
-    } else if (name === 'childPrice') {
+    } else if (name === 'childPriceUSD') {
       setFormData((prev) => ({ ...prev, priceUSD: { ...prev.priceUSD, child: parseFloat(value) || 0 } }));
-    } else {
+    } else if (name === 'adultPriceLKR') {
+      setFormData((prev) => ({ ...prev, priceLKR: { ...prev.priceLKR, adult: parseFloat(value) || 0 } }));
+    } else if (name === 'childPriceLKR') {
+      setFormData((prev) => ({ ...prev, priceLKR: { ...prev.priceLKR, child: parseFloat(value) || 0 } }));
+    }
+    else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -125,42 +132,92 @@ function ExperienceModal({ isOpen, onClose, onSubmit, initialExperience }: Exper
               <option value="">Select a Category</option>
               <option value="Tea Factory Tour & Tasting">Tea Factory Tour & Tasting</option>
               <option value="Hiking & Tea Plucking">Hiking & Tea Plucking</option>
+              {/* Add more categories as needed */}
             </select>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="adultPrice" className="block text-sm font-semibold mb-2 text-gray-700">
-                Adult Price (USD) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                id="adultPrice"
-                name="adultPrice"
-                value={formData.priceUSD.adult}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="childPrice" className="block text-sm font-semibold mb-2 text-gray-700">
-                Child Price (USD) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                id="childPrice"
-                name="childPrice"
-                value={formData.priceUSD.child}
-                onChange={handleChange}
-                min="0"
-                step="0.01"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
-                required
-              />
+
+          {/* Foreigner Pricing (USD) */}
+          <div className="border-t border-gray-200 pt-6 mt-6">
+            <h3 className="text-xl font-bold text-[#2D6A4F] mb-4 flex items-center gap-2">
+              <DollarSign size={20} /> Foreigner Pricing (USD)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="adultPriceUSD" className="block text-sm font-semibold mb-2 text-gray-700">
+                  Adult Price (USD) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="adultPriceUSD"
+                  name="adultPriceUSD"
+                  value={formData.priceUSD.adult}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="childPriceUSD" className="block text-sm font-semibold mb-2 text-gray-700">
+                  Child Price (USD) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="childPriceUSD"
+                  name="childPriceUSD"
+                  value={formData.priceUSD.child}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
+                  required
+                />
+              </div>
             </div>
           </div>
+
+          {/* Local Pricing (LKR) */}
+          <div className="border-t border-gray-200 pt-6 mt-6">
+            <h3 className="text-xl font-bold text-[#2D6A4F] mb-4 flex items-center gap-2">
+              <Wallet size={20} /> Local Pricing (LKR)
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="adultPriceLKR" className="block text-sm font-semibold mb-2 text-gray-700">
+                  Adult Price (LKR) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="adultPriceLKR"
+                  name="adultPriceLKR"
+                  value={formData.priceLKR.adult}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
+                  required
+                />
+              </div>
+              <div>
+                <label htmlFor="childPriceLKR" className="block text-sm font-semibold mb-2 text-gray-700">
+                  Child Price (LKR) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  id="childPriceLKR"
+                  name="childPriceLKR"
+                  value={formData.priceLKR.child}
+                  onChange={handleChange}
+                  min="0"
+                  step="0.01"
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#52B788]"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
 
           {/* Time Slots Management */}
           <div className="border-t border-gray-200 pt-6 mt-6">
@@ -334,7 +391,8 @@ export default function PlantationExperienceManagement({ plantation }: Plantatio
               <div>
                 <h3 className="text-xl font-bold text-[#2D6A4F]">{experience.name}</h3>
                 <p className="text-sm text-gray-600 mt-1">Category: {experience.category}</p>
-                <p className="text-sm text-gray-600">Adult Price: ${experience.priceUSD.adult} | Child Price: ${experience.priceUSD.child}</p>
+                <p className="text-sm text-gray-600">Adult Price: ${experience.priceUSD.adult} (USD) / Rs {experience.priceLKR.adult} (LKR)</p>
+                <p className="text-sm text-gray-600">Child Price: ${experience.priceUSD.child} (USD) / Rs {experience.priceLKR.child} (LKR)</p>
                 <p className="text-sm text-gray-500">{experience.timeSlots.length} Time Slots</p>
               </div>
               <div className="flex gap-3">
