@@ -23,7 +23,7 @@ const MOCK_PLANTATION_ADMINS: Record<string, { username: string; plantationId: s
 
 // Super Admin credentials
 const SUPER_ADMIN_USERNAME = 'superadmin';
-const SUPER_ADMIN_PASSWORD = 'superpassword123';
+const SUPER_ADMIN_PASSWORD = 'super123';
 
 export default function SignInModal({ isOpen, onClose }: SignInModalProps) {
   const { signIn } = useAuth();

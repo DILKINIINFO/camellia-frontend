@@ -1,6 +1,6 @@
-// --- START OF FILE SuperAdminDashboard.tsx ---
 
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/layout/Navbar';
 import Footer from '../../components/layout/Footer';
@@ -13,15 +13,25 @@ import {
   UserPlus,
   Mail,
   CheckCircle,
-} from 'lucide-react'; // Added icons
+  BarChart2, // Changed from AreaChart to BarChart2 for clarity
+} from 'lucide-react';
+import PlantationDetailModal from '../../features/super-admin/PlantationDetailModal'; // NEW: Import the modal
 
-// Mock data for plantations (you might have a central mock data file)
-interface Plantation {
+// Mock data for plantations
+export interface Plantation {
+  image: string;
+  description: ReactNode;
   id: string;
   name: string;
   owner: string;
   businessReg: string;
-  username: string; // For plantation admin
+  adminUsername: string; // Renamed for clarity
+  adminPassword?: string; // Storing mock password for editing
+  address: string; // Added for registration details
+  telephone: string; // Added for registration details
+  email: string; // Added for registration details
+  isDisabled: boolean; // NEW: To control visibility on public pages
+  registeredYear: number; // NEW: For chart data
 }
 
 // Mock initial plantations
@@ -31,14 +41,45 @@ const MOCK_PLANTATIONS: Plantation[] = [
     name: 'Pedro Tea Estate',
     owner: 'Pedro Es',
     businessReg: 'BRN-001-2020',
-    username: 'Ped_1 Es',
+    adminUsername: 'pedroadmin',
+    adminPassword: 'password123',
+    address: 'Pedro Tea Estate, Nuwara Eliya',
+    telephone: '0342256789',
+    email: 'pedro@estate.com',
+    isDisabled: false,
+    registeredYear: 2025,
+    image: 'src=images/pedro_tea_estate.jpg',
+    description: undefined
   },
   {
     id: '2',
-    name: 'Pedro Tea Estate',
-    owner: 'Pedro Es',
+    name: 'Blue Field Tea Garden',
+    owner: 'Bluefield Co.',
     businessReg: 'BRN-001-2021',
-    username: 'Ped_2 Es',
+    adminUsername: 'bluefieldadmin',
+    adminPassword: 'password123',
+    address: 'Blue Field Tea Garden, Ramboda',
+    telephone: '0522267890',
+    email: 'bluefield@garden.com',
+    isDisabled: false,
+    registeredYear: 2025,
+    image: 'https://images.unsplash.com/photo-1594631252845-29fc4cc8cde9?w=800',
+    description: undefined
+  },
+  {
+    id: '3',
+    name: 'Haputale Estate',
+    owner: 'Haputale PLC',
+    businessReg: 'BRN-001-2018',
+    adminUsername: 'haputaleadmin',
+    adminPassword: 'password123',
+    address: 'Haputale, Sri Lanka',
+    telephone: '0771234567',
+    email: 'haputale@estate.com',
+    isDisabled: true, // Example of a disabled plantation
+    registeredYear: 2024,
+    image: '',
+    description: undefined
   },
 ];
 
@@ -77,10 +118,16 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState<
     'plantations' | 'registerPlantation' | 'contactRequests'
   >('plantations');
-  const [plantations, setPlantations] =
-    useState<Plantation[]>(MOCK_PLANTATIONS);
+  // Initialize plantations from localStorage or MOCK_PLANTATIONS
+  const [plantations, setPlantations] = useState<Plantation[]>(() => {
+    const storedPlantations = localStorage.getItem('superAdminPlantations');
+    return storedPlantations ? JSON.parse(storedPlantations) : MOCK_PLANTATIONS;
+  });
   const [contactRequests, setContactRequests] =
     useState<ContactRequest[]>(MOCK_CONTACT_REQUESTS);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPlantation, setSelectedPlantation] = useState<Plantation | null>(null);
 
   // State for Register Plantation form
   const [newPlantation, setNewPlantation] = useState({
@@ -102,6 +149,11 @@ export default function SuperAdminDashboard() {
     }
   }, [user, navigate]);
 
+  // Save plantations to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('superAdminPlantations', JSON.stringify(plantations));
+  }, [plantations]);
+
   if (!user || user.role !== 'superadmin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -110,18 +162,54 @@ export default function SuperAdminDashboard() {
     );
   }
 
+  // --- Chart Data Preparation ---
+  const getChartData = () => {
+    const years = Array.from(new Set(plantations.map(p => p.registeredYear))).sort((a,b) => a - b);
+    const currentYear = new Date().getFullYear();
+    const minYear = Math.min(...years, currentYear - 2); // Ensure at least a few years back
+    const maxYear = Math.max(...years, currentYear + 2); // Ensure a few years forward
+    
+    const allYears = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i);
+
+    const data = allYears.map(year => ({
+      year: year,
+      plantations: plantations.filter(p => p.registeredYear === year).length
+    }));
+
+    return data;
+  };
+
+  const chartData = getChartData();
+
   // --- Plantation Management Functions ---
-  const handleGenerateCredentials = (plantationId: string) => {
-    const plantation = plantations.find((p) => p.id === plantationId);
-    if (plantation) {
-      const generatedUsername = `admin_${plantation.id}`;
-      const generatedPassword = Math.random().toString(36).slice(-8); // Simple random password
-      alert(
-        `Credentials for ${plantation.name}:\nUsername: ${generatedUsername}\nPassword: ${generatedPassword}\n\n(In a real app, these would be securely emailed or displayed once)`
-      );
-      // In a real application, you would store these credentials in a secure database
-      // and associate them with the plantation.
-    }
+  const handleViewDetails = (plantation: Plantation) => {
+    setSelectedPlantation(plantation);
+    setIsModalOpen(true);
+  };
+
+  const handleUpdatePlantation = (updatedPlantation: Plantation) => {
+    setPlantations((prev) =>
+      prev.map((p) => (p.id === updatedPlantation.id ? updatedPlantation : p))
+    );
+    // Also update the selected plantation in state if the modal is open
+    setSelectedPlantation(updatedPlantation); 
+  };
+
+  const handleGenerateCredentials = (plantation: Plantation) => {
+    const generatedUsername = `admin_${plantation.id}`;
+    const generatedPassword = Math.random().toString(36).slice(-8); // Simple random password
+
+    // Update the plantation with new credentials
+    const updatedPlantation = {
+      ...plantation,
+      adminUsername: generatedUsername,
+      adminPassword: generatedPassword,
+    };
+    handleUpdatePlantation(updatedPlantation); // Update the state and localStorage
+
+    alert(
+      `NEW Credentials for ${plantation.name}:\nUsername: ${generatedUsername}\nPassword: ${generatedPassword}\n\n(In a real app, these would be securely emailed or displayed once)`
+    );
   };
 
   // --- Register Plantation Form Handlers ---
@@ -170,12 +258,21 @@ export default function SuperAdminDashboard() {
     }
 
     const newId = (plantations.length + 1).toString();
+    const currentYear = new Date().getFullYear();
     const newPlantationEntry: Plantation = {
       id: newId,
       name: newPlantation.name,
       owner: newPlantation.owner,
       businessReg: newPlantation.businessReg,
-      username: `Ped_${newId} Es`, // Mock username for now
+      adminUsername: `admin_${newId}`, // Mock username for now
+      adminPassword: Math.random().toString(36).slice(-8), // Generate initial password
+      address: newPlantation.address,
+      telephone: newPlantation.telephone,
+      email: newPlantation.email,
+      isDisabled: false, // Newly registered plantations are enabled by default
+      registeredYear: currentYear,
+      image: '',
+      description: undefined
     };
 
     setPlantations((prev) => [...prev, newPlantationEntry]);
@@ -225,7 +322,7 @@ export default function SuperAdminDashboard() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <AreaChart size={20} /> Plantations
+              <BarChart2 size={20} /> Plantations
             </button>
             <button
               onClick={() => setActiveTab('registerPlantation')}
@@ -257,40 +354,33 @@ export default function SuperAdminDashboard() {
                   Total Plantations <span className="text-[#2D6A4F]">({plantations.length})</span>
                 </h2>
 
-                {/* Placeholder for chart */}
+                {/* Bar Chart */}
                 <div className="bg-white rounded-lg p-6 mb-8 shadow">
-                  <p className="text-gray-500 text-center">
-                    (Placeholder for plantation growth chart)
-                  </p>
-                  {/*
-                  You can integrate a charting library here, e.g., Recharts or Chart.js
-                  <div className="h-64 flex items-center justify-center">
-                    <AreaChart width={600} height={250} data={chartData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="year" />
-                      <YAxis />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="plantations" stroke="#8884d8" fill="#8884d8" />
-                    </AreaChart>
-                  </div>
-                  */}
-                    <div className="h-64 border border-gray-300 rounded-lg flex items-end justify-around p-4 text-sm text-gray-600">
-                    <div className="relative h-full w-1/5 flex flex-col justify-end items-center">
-                      <div className="bg-gray-300 w-full h-[10%] rounded-t-md"></div>
-                      <span className="mt-1">2024</span>
-                    </div>
-                    <div className="relative h-full w-1/5 flex flex-col justify-end items-center">
-                      <div className="bg-[#2D6A4F] w-full h-[40%] rounded-t-md"></div> {/* Example height */}
-                      <span className="mt-1">2025</span>
-                    </div>
-                    <div className="relative h-full w-1/5 flex flex-col justify-end items-center">
-                      <div className="bg-gray-300 w-full h-[15%] rounded-t-md"></div>
-                      <span className="mt-1">2026</span>
-                    </div>
-                    <div className="relative h-full w-1/5 flex flex-col justify-end items-center">
-                      <div className="bg-gray-300 w-full h-[5%] rounded-t-md"></div>
-                      <span className="mt-1">2027</span>
-                    </div>
+                  <h3 className="text-lg font-semibold text-center mb-4">Plantations Registered Per Year</h3>
+                  <div className="h-64 flex items-end justify-around p-4 text-sm text-gray-600 border-b border-l border-gray-300 relative">
+                    {/* Y-axis label */}
+                    <span className="absolute -left-20 bottom-1/2 -rotate-90 origin-center text-xs font-semibold">Number of Plantations</span>
+                    
+                    {/* Y-axis ticks (simplified) */}
+                    <div className="absolute left-0 h-full w-px bg-gray-300"></div>
+                    <div className="absolute left-0 bottom-0 w-full h-px bg-gray-300"></div>
+
+                    {chartData.map((dataPoint, index) => (
+                      <div key={index} className="relative h-full w-1/5 flex flex-col justify-end items-center mx-2">
+                        <div
+                          className="w-full rounded-t-md bg-[#2D6A4F] transition-all duration-300"
+                          style={{ height: `${(dataPoint.plantations / Math.max(...chartData.map(d => d.plantations), 1)) * 90}%` }} // Scale height
+                        ></div>
+                        {dataPoint.plantations > 0 && (
+                          <span className="absolute top-0 -mt-6 text-xs font-bold text-[#1B4332]">
+                            {dataPoint.plantations}
+                          </span>
+                        )}
+                        <span className="mt-2 text-xs font-semibold">{dataPoint.year}</span>
+                      </div>
+                    ))}
+                    {/* X-axis label */}
+                    <span className="absolute bottom-[-30px] left-1/2 -translate-x-1/2 text-xs font-semibold">Year</span>
                   </div>
                 </div>
 
@@ -327,7 +417,13 @@ export default function SuperAdminDashboard() {
                           scope="col"
                           className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                         >
-                          Username
+                          Admin Username
+                        </th>
+                         <th
+                          scope="col"
+                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        >
+                          Status
                         </th>
                         <th
                           scope="col"
@@ -339,7 +435,7 @@ export default function SuperAdminDashboard() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {plantations.map((plantation) => (
-                        <tr key={plantation.id}>
+                        <tr key={plantation.id} className={plantation.isDisabled ? 'bg-gray-100 text-gray-500' : ''}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                             #{plantation.id}
                           </td>
@@ -353,25 +449,20 @@ export default function SuperAdminDashboard() {
                             {plantation.businessReg}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {plantation.username}
+                            {plantation.adminUsername}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${plantation.isDisabled ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                              {plantation.isDisabled ? 'Disabled' : 'Active'}
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex gap-2">
                               <button
-                                onClick={() =>
-                                  alert(`Viewing details for ${plantation.name}`)
-                                }
+                                onClick={() => handleViewDetails(plantation)}
                                 className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                               >
                                 <Eye className="h-4 w-4 mr-1" /> View
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleGenerateCredentials(plantation.id)
-                                }
-                                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                              >
-                                <Key className="h-4 w-4 mr-1" /> Credentials
                               </button>
                             </div>
                           </td>
@@ -674,6 +765,16 @@ export default function SuperAdminDashboard() {
         </div>
       </main>
       <Footer />
+
+      {selectedPlantation && (
+        <PlantationDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          plantation={selectedPlantation}
+          onUpdate={handleUpdatePlantation}
+          onGenerateNewCredentials={handleGenerateCredentials}
+        />
+      )}
     </div>
   );
 }
